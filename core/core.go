@@ -18,18 +18,26 @@ type InitConfig struct {
 	//SwarmPorts      string
 }
 
-
 // RunConfig is used to define run options for a textile node
 type RunConfig struct {
 	RepoPath          string
 }
 
-type Variables struct {
-	SwarmAddress    string
-	FailedAddresses []string
-    lock            sync.Mutex
+type Textile struct {
+	repoPath          string
+	pinCode           string
+	config            *config.Config
+	ctx               context.Context
+	stop              func() error
+	node              *host.Host
+	started           bool
+	datastore         repo.Datastore
+	online            chan struct{}
+	done              chan struct{}
+	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
+	lock              sync.Mutex
+    stream            *stream.StreamService
 }
-
 
 // common errors
 var ErrAccountRequired = fmt.Errorf("account required")
@@ -79,11 +87,107 @@ func InitRepo(conf InitConfig) error {
 	return nil
 }
 
-func Start(ctx context.Context, phost host.Host) error {
-    service.NewShadowService(ctx, phost)
+func NewTextile(conf RunConfig) (*Textile, error) {
+    if !fsrepo.IsInitialized(conf.RepoPath) {
+		return nil, repo.ErrRepoDoesNotExist
+	}
+
+	// check if repo needs a major migration
+	err := repo.Stat(conf.RepoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// force open the repo and datastore
+	removeLocks(conf.RepoPath)
+
+	node := &Textile{
+		repoPath:          conf.RepoPath,
+		pinCode:           conf.PinCode,
+	}
+
+	node.config, err = config.Read(node.repoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	sqliteDb, err := db.Create(node.repoPath, node.pinCode)
+	if err != nil {
+		return nil, err
+	}
+	node.datastore = sqliteDb
+
+	return node, nil
+}
+
+// Start creates an ipfs node and starts textile services
+func (t *Textile) Start() error {
+	t.lock.Lock()
+	if t.started {
+		t.lock.Unlock()
+		return ErrStarted
+	}
+
+	t.online = make(chan struct{})
+	t.done = make(chan struct{})
+
+	// open db
+	err = t.touchDatastore()
+	if err != nil {
+		return err
+	}
+
+	// create services
+	t.stream = service.NewStreamService(
+		t.account,
+		t.Ipfs,
+		t.datastore,
+		t.sendNotification,
+        t.SubscribeStream,
+		context.Background())//Share the same ctx with textile. That is because we do not need to manually cancel it.
+	t.shadow = shadow.NewShadowService(
+        t.account,
+        t.Ipfs,
+        t.datastore,
+        t.shadowMsgRecv,
+        t.config.IsShadow,
+        t.account.Address())
+    t.cafe = NewCafeService(
+		t.account,
+		t.Ipfs,
+		t.datastore,
+		t.cafeInbox,
+        t.stream,
+        t.shadow)
+
+	go func() {
+		defer func() {
+			close(t.online)
+			t.lock.Unlock()
+		}()
+
+		t.stream.Start()
+        t.shadow.Start()
+    }
+	t.started = true
     return nil
 }
 
+
+// touchDatastore ensures that we have a good db connection
+func (t *Textile) touchDatastore() error {
+	if err := t.datastore.Ping(); err != nil {
+		log.Debug("re-opening datastore...")
+
+		sqliteDB, err := db.Create(t.repoPath, t.pinCode)
+		if err != nil {
+			return err
+		}
+		t.datastore = sqliteDB
+	}
+
+	return nil
+}
 
 type loggingWaitGroup struct {
 	n  string
