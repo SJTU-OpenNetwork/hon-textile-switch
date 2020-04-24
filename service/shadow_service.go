@@ -21,12 +21,12 @@ const shadowServiceProtocol = protocol.ID("/textile/shadow_test/1.0.0")
 
 type ShadowService struct {
 	ctx context.Context
-	peerHost host.Host
+	peerHost *host.Host
 	strmap map[peer.ID]*messageSender
 	sLock sync.Mutex
 }
 
-func NewShadowService (ctx context.Context, phost host.Host) *ShadowService {
+func NewShadowService (ctx context.Context, phost *host.Host) *ShadowService {
 	return &ShadowService{
 		ctx: ctx,
 		peerHost: phost,
