@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+    "context"
+	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/SJTU-OpenNetwork/hon-shadow/service"
 	"github.com/SJTU-OpenNetwork/hon-shadow/repo"
 	"github.com/SJTU-OpenNetwork/hon-shadow/repo/db"
@@ -25,7 +27,7 @@ type RunConfig struct {
 type Variables struct {
 	SwarmAddress    string
 	FailedAddresses []string
-	lock            sync.Mutex
+    lock            sync.Mutex
 }
 
 
@@ -75,6 +77,11 @@ func InitRepo(conf InitConfig) error {
 
 	//return applyTextileConfigOptions(conf)
 	return nil
+}
+
+func Start(ctx context.Context, phost host.Host) error {
+    service.NewShadowService(ctx, phost)
+    return nil
 }
 
 
