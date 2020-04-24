@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -31,6 +32,8 @@ type SQLiteDatastore struct {
 
 
 func Create(repoPath, pin string) (*SQLiteDatastore, error) {
+	dbDir := path.Join(repoPath, "datastore")
+	os.Mkdir(dbDir, os.ModePerm)
 	dbPath := path.Join(repoPath, "datastore", "mainnet.db")
 	fmt.Printf("Create datastore to %s\n", dbPath)
 	conn, err := sql.Open("sqlite3", dbPath)
