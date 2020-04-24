@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/SJTU-OpenNetwork/hon-shadow/core"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/core"
 	"os"
 )
 

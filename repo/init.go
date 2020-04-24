@@ -7,8 +7,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/SJTU-OpenNetwork/hon-shadow/repo/config"
-	"github.com/SJTU-OpenNetwork/hon-shadow/utils"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/utils"
 )
 
 var ErrRepoExists = fmt.Errorf("repo not empty, reinitializing would overwrite your account")

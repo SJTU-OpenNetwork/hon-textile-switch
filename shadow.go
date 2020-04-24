@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"github.com/SJTU-OpenNetwork/hon-shadow/cmd"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/cmd"
 )
 
 

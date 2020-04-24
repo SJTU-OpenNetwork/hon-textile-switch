@@ -7,7 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 	inet "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-msgio"
-	"github.com/SJTU-OpenNetwork/hon-shadow/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/golang/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"io"

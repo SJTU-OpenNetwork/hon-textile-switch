@@ -4,9 +4,9 @@ import (
 	"fmt"
     "context"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/SJTU-OpenNetwork/hon-shadow/service"
-	"github.com/SJTU-OpenNetwork/hon-shadow/repo"
-	"github.com/SJTU-OpenNetwork/hon-shadow/repo/db"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"strings"
 	"sync"
 )

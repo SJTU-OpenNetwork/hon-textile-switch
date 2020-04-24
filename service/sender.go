@@ -14,7 +14,7 @@ import (
 	inet "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-msgio"
-	"github.com/SJTU-OpenNetwork/hon-shadow/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	ggio "github.com/gogo/protobuf/io"
 	p2phost "github.com/libp2p/go-libp2p-core/host"
 )

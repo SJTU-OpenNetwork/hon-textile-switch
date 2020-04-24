@@ -2,7 +2,7 @@ package repo
 
 import (
 	"database/sql"
-	"github.com/SJTU-OpenNetwork/hon-shadow/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 )
 
 type Datastore interface {

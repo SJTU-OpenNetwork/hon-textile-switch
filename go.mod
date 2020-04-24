@@ -1,4 +1,4 @@
-module github.com/Riften/hon-shadow
+module github.com/SJTU-OpenNetwork/hon-textile-switch
 
 go 1.13
 

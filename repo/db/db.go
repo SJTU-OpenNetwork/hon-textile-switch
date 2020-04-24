@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	_ "github.com/mutecomm/go-sqlcipher"
-	"github.com/SJTU-OpenNetwork/hon-shadow/repo"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 )
 
 
