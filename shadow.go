@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
 	"os"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/cmd"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 )
 
 
@@ -32,4 +35,9 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	ctx := context.Background()
+	h, err := host.NewHost(ctx)
+	shadowService := service.NewShadowService(ctx, h)
+	shadowService.Start()
+	fmt.Printf("Hello World, my hosts ID is %s\n", h.ID())
 }
