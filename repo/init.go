@@ -52,7 +52,7 @@ func Init(repoPath string) error {
 	}
 
 
-	fmt.Printf("initializing repo at %s", repoPath)
+	fmt.Printf("initializing repo at %s\n", repoPath)
 
 	// write default textile config
 	tconf, err := config.Init()

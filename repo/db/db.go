@@ -48,12 +48,15 @@ func Create(repoPath, pin string) (*SQLiteDatastore, error) {
 	lock := new(sync.Mutex)
     //videoChunkLock := new(sync.Mutex)
     //videoLock := new(sync.Mutex)
-	return &SQLiteDatastore{
+
+	res := &SQLiteDatastore{
 		streammetas:		NewStreamMetaStore(conn, lock),
 		streamblocks:       NewStreamBlockStore(conn, lock),
 		db:                 conn,
 		lock:               lock,
-	}, nil
+	}
+	res.InitTables("")
+	return res, nil
 }
 
 func (d *SQLiteDatastore) Ping() error {
