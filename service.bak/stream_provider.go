@@ -1,4 +1,4 @@
-package stream
+package service
 
 import (
 	"sync"

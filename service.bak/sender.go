@@ -1,10 +1,13 @@
 package service
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-core/protocol"
 	"sync"
 	"time"
+	"io"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/helpers"
@@ -12,34 +15,44 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-msgio"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
+	ggio "github.com/gogo/protobuf/io"
+	p2phost "github.com/libp2p/go-libp2p-core/host"
 )
 
-func (srv *Service) messageSenderForPeer(ctx context.Context, p peer.ID) (*messageSender, error) {
-	srv.smlk.Lock()
-	ms, ok := srv.strmap[p]
+func messageSenderForPeer(ctx context.Context, p peer.ID, srv Service, h p2phost.Host) (*messageSender, error) {
+	//srv.smlk.Lock()
+	//ms, ok := srv.strmap[p]
+	ms, ok := srv.GetSender(p)
 	if ok {
-		srv.smlk.Unlock()
+		//srv.smlk.Unlock()
 		return ms, nil
 	}
-	ms = &messageSender{p: p, srv: srv}
-	srv.strmap[p] = ms
-	srv.smlk.Unlock()
+
+	// Create a new messageSender
+	ms = &messageSender{
+		p: p,
+		protocol: srv.Protocol(),
+		h:h,
+	}
+	srv.AddSender(ms)
 
 	if err := ms.prepOrInvalidate(ctx); err != nil {
-		srv.smlk.Lock()
-		defer srv.smlk.Unlock()
+		// ms has been invalidated.
+		//srv.smlk.Lock()
+		//defer srv.smlk.Unlock()
 
-		if msCur, ok := srv.strmap[p]; ok {
+		//if msCur, ok := srv.strmap[p]; ok {
 			// Changed. Use the new one, old one is invalid and
 			// not in the map so we can just throw it away.
-			if ms != msCur {
-				return msCur, nil
-			}
+		//	if ms != msCur {
+		//		return msCur, nil
+		//	}
 			// Not changed, remove the now invalid stream from the
 			// map.
-			delete(srv.strmap, p)
-		}
+		//	delete(srv.strmap, p)
+		//}
 		// Invalid but not in map. Must have been removed by a disconnect.
+		srv.RemoveSender(p)
 		return nil, err
 	}
 	// All ready to go.
@@ -52,7 +65,9 @@ type messageSender struct {
 	lk sync.Mutex
 	p  peer.ID
 
-	srv *Service
+	//srv *Service
+	protocol protocol.ID
+	h p2phost.Host
 
 	invalid   bool
 	singleMes int
@@ -87,7 +102,8 @@ func (ms *messageSender) prep(ctx context.Context) error {
 		return nil
 	}
 
-	nstr, err := ms.srv.Node().NewStream(ctx, ms.p, ms.srv.handler.Protocol())
+	//nstr, err := ms.srv.Node().PeerHost.NewStream(ctx, ms.p, ms.srv.handler.Protocol())
+	nstr, err := ms.h.NewStream(ctx, ms.p, ms.protocol)
 	if err != nil {
 		return err
 	}
@@ -210,4 +226,31 @@ func (ms *messageSender) ctxReadMsg(ctx context.Context, mes *pb.Envelope) error
 	case <-t.C:
 		return ErrReadTimeout
 	}
+}
+
+type bufferedDelimitedWriter struct {
+	*bufio.Writer
+	ggio.WriteCloser
+}
+
+var writerPool = sync.Pool{
+	New: func() interface{} {
+		w := bufio.NewWriter(nil)
+		return &bufferedDelimitedWriter{
+			Writer:      w,
+			WriteCloser: ggio.NewDelimitedWriter(w),
+		}
+	},
+}
+
+func writeMsg(w io.Writer, mes *pb.Envelope) error {
+	bw := writerPool.Get().(*bufferedDelimitedWriter)
+	bw.Reset(w)
+	err := bw.WriteMsg(mes)
+	if err == nil {
+		err = bw.Flush()
+	}
+	bw.Reset(nil)
+	writerPool.Put(bw)
+	return err
 }
