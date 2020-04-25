@@ -23,6 +23,8 @@ func (e *ErrDirNotLock) Error() string {
 	return fmt.Sprintf("Unlock a unlocked directory %s.", e.dirPath)
 }
 
+//func (e *ErrFetchLockFail)
+
 // flock implements file lock
 // Use this to avoid file r/w conflict between programs.
 // Each file lock will lock a directory.
