@@ -1,0 +1,45 @@
+syntax = "proto3";
+option java_package = "sjtu.opennet.textilepb";
+option go_package = "pb";
+
+//import "google/protobuf/any.proto";
+//import "google/protobuf/timestamp.proto";
+//import "model.proto";
+
+message StreamBlockContent {
+    string streamID = 1;
+    uint64 index = 2;
+    bytes data = 3; 
+    bool isRoot = 4;
+    bytes description = 5;
+}
+
+message StreamBlockContentList {
+    repeated StreamBlockContent blocks = 1;    
+}
+
+message StreamRequest {
+    string id = 1;
+    uint64 streamMap = 2;
+    uint64 startIndex = 3;
+}
+message StreamRequestHandle {
+    uint64 value =1;
+}
+
+message StreamUnsubscribe {
+    string id = 1;
+}
+
+message StreamUnsubscribeAck {
+    string id = 1;
+}
+
+// StreamClose is used to tell other peers that a stream is closed.
+//  - streamId: Id of stream.
+//  - maxIndex: Maximum index of blocks.
+//              Receiver will detect the lost blocks according to it.
+message StreamClose {
+    string streamId = 1;
+    uint64 maxIndex = 2;
+}

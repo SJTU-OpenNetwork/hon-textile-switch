@@ -1,26 +1,21 @@
 // Service for sending/receving stream related data - add by Jerry 2020/02/25
 
-package service
+package stream
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/SJTU-OpenNetwork/hon-textile/ipfs"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/opentracing/opentracing-go/log"
-	"io/ioutil"
-	"sync"
 
-	"bytes"
+//    "bytes"
 	"context"
-	"time"
-    "github.com/segmentio/ksuid"
 
 	"github.com/golang/protobuf/ptypes"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	protocol "github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
+	"github.com/libp2p/go-libp2p-core/host"
 )
 
 
@@ -30,26 +25,25 @@ var ErrRedundantReq = fmt.Errorf("Request is redundant")
 var ErrUnknowkStream = fmt.Errorf("Unknown stream")
 
 type StreamService struct {
-	ctx context.Context
-	peerHost host.Host
-	strmap map[peer.ID]*messageSender
-	sLock sync.Mutex
-	
+	service          *service.Service
 	datastore        repo.Datastore
+	online           bool
     subscribe        func(string) error 
-    
+	
     // for workers
     activeWorkers *workerStore
-	ReceivedFile <- chan ipld.Node
     
     // for providers
     providers *providerStore
 	lostIndex chan *lostReport
+
+	// Context for main routine
+	ctx context.Context
 }
 
 // NewStreamService returns a new stream service
 func NewStreamService(
-	host    *host.Host,
+	node func() host.Host,
 	datastore repo.Datastore,
     subscribe func(string) error,
 	ctx context.Context,
@@ -58,10 +52,10 @@ func NewStreamService(
 		datastore:        datastore,
         subscribe:        subscribe,
 		ctx:			  ctx,
-		//activeStreams:newActiveStreamStore(ctx, datastore, node, ),
 		activeWorkers: newWorkerStore(),
         providers: newProviderStore(),
 	}
+	handler.service = service.NewService(handler, node)
 	return handler
 }
 
@@ -74,17 +68,14 @@ func (h *StreamService) Protocol() protocol.ID {
 func (h *StreamService) Start() {
     h.online = true
 	h.service.Start()
-    // TODO:
-    // 		It may not be a good idea to use StreamService as StreamNotifee directly.
-	h.service.Node().PeerHost.Network().Notify((*StreamNotifee)(h))
+	h.service.Node().Network().Notify((*StreamNotifee)(h))
 }
+
 
 // Handle is called by the underlying service handler method
 func (h *StreamService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error) {
 	fmt.Printf("core/stream_service.go Handler: New message receive from %s.\n", pid.Pretty())
 	switch env.Message.Type {
-	case pb.Message_STREAM_BLOCK:
-		return h.handleStreamBlock(env, pid)
 	case pb.Message_STREAM_BLOCK_LIST:
 		return h.handleStreamBlockList(env, pid)
 	case pb.Message_STREAM_REQUEST:
@@ -106,6 +97,7 @@ func (h *StreamService) UnsubscribeStream(sid string) error{
     return nil
 }
 
+// ======================== FOR MESSAGE RECV/SEND ==================================
 // handleStreamBlock receives a STREAM_BLOCK_LIST message
 func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error) {
 	//fmt.Printf("StreamService: New stream blk list receive from %s\n", pid.Pretty())
@@ -119,12 +111,30 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
         size := 0
         cid_str := ""
         if len(blk.Data) != 0 {
-            err := h.putBlock(bytes.NewReader(blk.Data))
-            if err != nil {
-                return nil, err
-            }
+            //TODO: save blk in file system
+            //stat, err := ipfs.PutBlock(h.service.Node(), bytes.NewReader(blk.Data))
+            //if err != nil {
+            //    return nil, err
+            //}
         }
+        model := &pb.StreamBlock {
+            Id: cid_str,
+            Streamid: blk.StreamID,
+            Index: blk.Index,
+            Size: int32(size),
+            IsRoot: blk.IsRoot,
+            Description: string(blk.Description),
+        }
+        //fmt.Printf("StreamService: Received stream %s; index %d; cid %s\n", blk.StreamID, blk.Index, cid.String())
+        //log.Debugf("[%s] Block %s, Stream %s, Index %d, From %s, Size %d", TAG_BLOCKRECEIVE, cid_str, blk.StreamID, blk.Index, pid.Pretty(), size)
+        err = h.datastore.StreamBlocks().Add(model)
+        if err != nil {
+            return nil, err
+        }
+        //fmt.Printf("It is successfully stored in our database!\n")
+
         if blk.IsRoot {
+            // we found a file !
             fmt.Print("It is a root node of a merkle-DAG!\n")
             err = h.handleRootBlk(pid, model)
             if err != nil {
@@ -148,7 +158,7 @@ func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
 	    }
         err := h.datastore.StreamMetas().UpdateNblocks(blk.Streamid, blk.Index)
         if err != nil {
-            log.Error(err)
+            //log.Error(err)
             return err
         }
     }
@@ -197,7 +207,7 @@ func (h *StreamService) SendStreamRequest(peerId string, config *pb.StreamReques
 	if err != nil {
 		return nil,err
 	}
-	log.Debugf("[%s] Stream %s, To %s", TAG_STREAMREQUEST, config.Id, peerId)
+	//log.Debugf("[%s] Stream %s, To %s", TAG_STREAMREQUEST, config.Id, peerId)
 	return h.service.SendRequest(peerId, env)
 }
 
@@ -209,7 +219,7 @@ func (h *StreamService) SendUnsubscribeRequest(peerId string, sid string) (*pb.E
 	if err != nil {
 		return nil,err
 	}
-	log.Debugf("[%s] Stream %s, To %s", TAG_STREAMREQUEST, sid, peerId)
+	//log.Debugf("[%s] Stream %s, To %s", TAG_STREAMREQUEST, sid, peerId)
 	return h.service.SendRequest(peerId, env)
 }
 
@@ -253,7 +263,7 @@ func (h *StreamService) handleBlockLost(report *lostReport){
 // Call it when you decide to send blocks to requestor.
 // Use "Response" to distinguish with "Handle".
 func (h *StreamService) responseRequest(pid peer.ID, req *pb.StreamRequest) error {
-	log.Debugf("[%s] Stream %s, From %s", TAG_STREAMRESPONSE, req.Id, pid.Pretty())
+	//log.Debugf("[%s] Stream %s, From %s", TAG_STREAMRESPONSE, req.Id, pid.Pretty())
 
 	// Raise an error if obtain the same request (Same requestor with same streamid and substream requested by the same peer)
 	if h.activeWorkers.isRedundant(pid, req) {
@@ -281,12 +291,12 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
     for _, blk:= range blks {
         var data []byte
         if blk.Id != "" {
-            r, err := ipfs.GetBlock(h.service.Node(), path.New(blk.Id))
-            data, err = ioutil.ReadAll(r)
-		    if err != nil {
-                log.Error(err)
-			    return err
-		    }
+            //TODO: get block from database and file system
+            //r, err := ipfs.GetBlock(h.service.Node(), path.New(blk.Id))
+            //data, err = ioutil.ReadAll(r)
+		    //if err != nil {
+			//    return err
+		    //}
         }
         content := &pb.StreamBlockContent{
             StreamID: blk.Streamid,
@@ -295,18 +305,18 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
             IsRoot: blk.IsRoot,
             Description: []byte(blk.Description),
         }
-        log.Debugf("[%s] Block %s, Stream %s, Index %d, To %s, Size %d, description: %s", TAG_BLOCKSEND, blk.Id, blk.Streamid, blk.Index, peerId.Pretty(), blk.Size, blk.Description)
+        //log.Debugf("[%s] Block %s, Stream %s, Index %d, To %s, Size %d, description: %s", TAG_BLOCKSEND, blk.Id, blk.Streamid, blk.Index, peerId.Pretty(), blk.Size, blk.Description)
         blist.Blocks = append(blist.Blocks, content)
     }
 	env, err := h.service.NewEnvelope(pb.Message_STREAM_BLOCK_LIST, blist, nil, false)
 	if err != nil {
-        log.Error(err)
+        //log.Error(err)
 		return err
 	}
 	// Send envelope use StreamService.service.SendMessage
     err = h.service.SendMessage(nil, peerId.Pretty(), env)
     if err != nil {
-        log.Error(err)
+        //log.Error(err)
     }
 	return nil
 }
@@ -319,6 +329,9 @@ func (h *StreamService) FetchBlocks(streamId string, startIndex uint64, maxNum i
 		return nil,fmt.Errorf("stream blocks fetch failed")
 	}
     return blks, nil
+}
+
+func (h *StreamService) AddPotential(pid string, config *pb.StreamRequest, hopcnt int) {
 }
 
 
@@ -339,7 +352,7 @@ func (h *StreamService) Workload() int {
 }
 
 func (h *StreamService) WorkerStat() {
-	log.Debugf("StreamManager.WorkerStat()\n")
+	//log.Debugf("StreamManager.WorkerStat()\n")
 	h.activeWorkers.PrintOut()
 }
 
@@ -347,6 +360,7 @@ func (h *StreamService) WorkerStat() {
 // ============== FOR PEER MANAGEMENT ===================
 func (h *StreamService)PeerDisconnected(pid peer.ID) {
 	// Stop all the workers
+	//log.Debugf("Peer %s disconnected", pid)
 	h.activeWorkers.endPeer(pid.Pretty())
     provider := h.providers.remove(pid.Pretty())
     if provider != nil{
@@ -354,7 +368,7 @@ func (h *StreamService)PeerDisconnected(pid peer.ID) {
         for _,stream := range(provider.subStreams) {
             err := h.subscribe(stream.streamId)
             if err != nil{
-                log.Error(err)
+                //log.Error(err)
             }
         }
     }

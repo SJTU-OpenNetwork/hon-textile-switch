@@ -32,20 +32,18 @@ func Store(block pb.StreamBlock,path string) error{
 
 // Get gets the data from path
 func Get(path string, filename string) ([]byte,error) {
-	if !utils.DirectoryExists(path) {
-		return nil, ErrPathDoesNotExist
-	}
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		if file == filename {
-			data,err := ioutil.ReadFile(filename)
-			if err != nil{
-				return data, nil
-			}
-		}
-	}
-	return nil, ErrDataDoesNotExist
+
+	// Check whether block data exists.
+	// Read block data if exist
+	 _, err := os.Stat(path + "/"+ filename)
+	 if err != nil{
+	 	return nil,err
+	 }else{
+		 data,err := ioutil.ReadFile(path + "/" +filename)
+		 if err != nil{
+			 return nil,err
+		 }else {
+			 return data, nil
+		 }
+	 }
 }

@@ -6,7 +6,10 @@ import (
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
 	"strings"
 	"sync"
 )
@@ -103,7 +106,6 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 
 	node := &Textile{
 		repoPath:          conf.RepoPath,
-		pinCode:           conf.PinCode,
 	}
 
 	node.config, err = config.Read(node.repoPath)
@@ -132,33 +134,21 @@ func (t *Textile) Start() error {
 	t.done = make(chan struct{})
 
 	// open db
-	err = t.touchDatastore()
+    err := t.touchDatastore()
 	if err != nil {
 		return err
 	}
 
 	// create services
 	t.stream = service.NewStreamService(
-		t.account,
-		t.Ipfs,
+		t.node,
 		t.datastore,
-		t.sendNotification,
         t.SubscribeStream,
 		context.Background())//Share the same ctx with textile. That is because we do not need to manually cancel it.
 	t.shadow = shadow.NewShadowService(
-        t.account,
-        t.Ipfs,
+        t.node,
         t.datastore,
-        t.shadowMsgRecv,
-        t.config.IsShadow,
-        t.account.Address())
-    t.cafe = NewCafeService(
-		t.account,
-		t.Ipfs,
-		t.datastore,
-		t.cafeInbox,
-        t.stream,
-        t.shadow)
+        t.shadowMsgRecv)
 
 	go func() {
 		defer func() {
@@ -168,7 +158,7 @@ func (t *Textile) Start() error {
 
 		t.stream.Start()
         t.shadow.Start()
-    }
+    }()
 	t.started = true
     return nil
 }
