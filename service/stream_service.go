@@ -5,9 +5,13 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/SJTU-OpenNetwork/hon-textile/ipfs"
+	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/opentracing/opentracing-go/log"
 	"io/ioutil"
+	"sync"
 
-    "bytes"
+	"bytes"
 	"context"
 	"time"
     "github.com/segmentio/ksuid"
