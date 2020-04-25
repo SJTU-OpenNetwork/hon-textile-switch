@@ -5,9 +5,17 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/SJTU-OpenNetwork/hon-textile/ipfs"
+	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/opentracing/opentracing-go/log"
 	"io/ioutil"
+	"sync"
 
+<<<<<<< HEAD:service/stream_service.go
+	"bytes"
+=======
     "sync"
+>>>>>>> 9ccf3eb6ff71b3143621b93fa1f8be8f31c0f0ea:service.bak/stream_service.go
 	"context"
 
 	"github.com/libp2p/go-msgio"
