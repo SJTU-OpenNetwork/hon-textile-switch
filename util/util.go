@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+    "fmt"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -102,4 +103,50 @@ func Mkdirp(dir string) error {
 		}
 	}
 	return nil
+}
+
+func DirectoryExists(filePath string) bool {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
+	return fileInfo.IsDir()
+}
+
+var ErrPathDoesNotExist = fmt.Errorf("path does not exist")
+var ErrDataDoesNotExist = fmt.Errorf("blockdata does not exist")
+
+// Store stores the received streamblock to path
+func Store(path string, filename string, data []byte) error{
+	//create dir if not exist
+	if !DirectoryExists(path) {
+		err := os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	} else {
+		err :=  ioutil.WriteFile(filename, data, os.ModePerm)
+		if err!=nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Get gets the data from path
+func Get(path string, filename string) ([]byte,error) {
+
+	// Check whether block data exists.
+	// Read block data if exist
+	 _, err := os.Stat(path + "/"+ filename)
+	 if err != nil{
+	 	return nil,err
+	 }else{
+		 data,err := ioutil.ReadFile(path + "/" +filename)
+		 if err != nil{
+			 return nil,err
+		 }else {
+			 return data, nil
+		 }
+	 }
 }

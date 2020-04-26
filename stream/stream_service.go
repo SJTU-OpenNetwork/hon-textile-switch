@@ -15,6 +15,7 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
 	"github.com/libp2p/go-libp2p-core/host"
 )
 
@@ -29,6 +30,7 @@ type StreamService struct {
 	datastore        repo.Datastore
 	online           bool
     subscribe        func(string) error 
+	repoPath         string
 	
     // for workers
     activeWorkers *workerStore
@@ -45,11 +47,13 @@ type StreamService struct {
 func NewStreamService(
 	node func() host.Host,
 	datastore repo.Datastore,
+    repoPath  string,
     subscribe func(string) error,
 	ctx context.Context,
 ) *StreamService {
 	handler := &StreamService{
 		datastore:        datastore,
+        repoPath:         repoPath,
         subscribe:        subscribe,
 		ctx:			  ctx,
 		activeWorkers: newWorkerStore(),
@@ -109,16 +113,15 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
     }
     for _, blk := range blks.Blocks {
         size := 0
-        cid_str := ""
         if len(blk.Data) != 0 {
             //TODO: save blk in file system
-            //stat, err := ipfs.PutBlock(h.service.Node(), bytes.NewReader(blk.Data))
-            //if err != nil {
-            //    return nil, err
-            //}
+            err := util.Store(h.repoPath, blk.Description, blk.Data)
+            if err != nil {
+                return nil, err
+            }
         }
         model := &pb.StreamBlock {
-            Id: cid_str,
+            Id: blk.Description,
             Streamid: blk.StreamID,
             Index: blk.Index,
             Size: int32(size),
@@ -292,18 +295,18 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
         var data []byte
         if blk.Id != "" {
             //TODO: get block from database and file system
-            //r, err := ipfs.GetBlock(h.service.Node(), path.New(blk.Id))
-            //data, err = ioutil.ReadAll(r)
-		    //if err != nil {
-			//    return err
-		    //}
+            var err error
+            data, err = util.Get(h.repoPath, blk.Id)
+		    if err != nil {
+			    return err
+		    }
         }
         content := &pb.StreamBlockContent{
             StreamID: blk.Streamid,
             Index: blk.Index,
             Data: data,
             IsRoot: blk.IsRoot,
-            Description: []byte(blk.Description),
+            Description: blk.Id,
         }
         //log.Debugf("[%s] Block %s, Stream %s, Index %d, To %s, Size %d, description: %s", TAG_BLOCKSEND, blk.Id, blk.Streamid, blk.Index, peerId.Pretty(), blk.Size, blk.Description)
         blist.Blocks = append(blist.Blocks, content)

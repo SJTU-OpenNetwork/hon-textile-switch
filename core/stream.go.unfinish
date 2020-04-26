@@ -7,6 +7,7 @@ import (
 
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/broadcast"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -77,10 +78,7 @@ func (t *Textile) handleProviderSearchResult(resultCh <-chan *pb.QueryResult, er
                 }
 
                 // if the provider is connected, request the stream directly
-                connected, err := ipfs.SwarmConnected(t.node, item.Pid) 
-	            if err != nil{
-	    	        break
-                }
+                connected := host.SwarmConnected(t.node, item.Pid) 
                 
                 if connected {
                     env, err := t.RequestStream(item.Pid, config)
