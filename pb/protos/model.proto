@@ -6,6 +6,9 @@ option go_package = "pb";
 //import "google/protobuf/struct.proto";
 //import "message.proto";
 
+
+// StreamBlock is the meta data of a block
+// The descriptin stores the complete file name
 message StreamBlock {
     string id       = 1;
     string streamid = 2;

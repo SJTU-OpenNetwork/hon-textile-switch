@@ -6,12 +6,15 @@ option go_package = "pb";
 //import "google/protobuf/timestamp.proto";
 //import "model.proto";
 
+
+// StreamBlockContent is used for transmitting stream block in stream service
+// the description is used for store CID due to the lack of ipfs interfaces in switches
 message StreamBlockContent {
     string streamID = 1;
     uint64 index = 2;
     bytes data = 3; 
     bool isRoot = 4;
-    bytes description = 5;
+    string description = 5;
 }
 
 message StreamBlockContentList {

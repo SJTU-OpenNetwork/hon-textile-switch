@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/utils"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
 )
 
 var ErrRepoExists = fmt.Errorf("repo not empty, reinitializing would overwrite your account")
@@ -34,7 +34,7 @@ func isInitialized(repoPath string) (bool, error) {
 
 func Init(repoPath string) error {
 	// Make directory
-	if !utils.DirectoryExists(repoPath) {
+	if !util.DirectoryExists(repoPath) {
 		err := os.Mkdir(repoPath, os.ModePerm)
 		if err != nil {return err}
 	} else {
