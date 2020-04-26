@@ -53,4 +53,20 @@ func (w *WhiteList) Add(peerId string) error {
 	return nil
 }
 
-//func (w *WhiteList)
+func (w *WhiteList) Remove(peerId string) error {
+	ok := w.flock.Lock()
+	defer func() {
+		err := w.flock.Unlock()
+		if err != nil {
+			fmt.Printf("Error occur when unlock whitelist dir:\n %s\n", err.Error())
+		}
+	}()
+
+	if !ok {
+		fmt.Printf("Fail to get flock of whitelist dir %s\n", w.dirPath)
+		return &ErrFetchLockFail{dirPath:w.dirPath}
+	}
+
+	// Do Remove
+	return nil
+}
