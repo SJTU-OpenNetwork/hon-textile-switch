@@ -2,15 +2,14 @@ package db
 
 import (
 	"database/sql"
-	"os"
+	"fmt"
 	"path"
 	"strings"
 	"sync"
-    "fmt"
 
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/golang/protobuf/jsonpb"
 	_ "github.com/mutecomm/go-sqlcipher"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 )
 
 
@@ -30,10 +29,13 @@ type SQLiteDatastore struct {
 }
 
 
-
+// Create creates a new datastore.
+// Note:
+//		- Remember to call InitTables when initializing datastore.
+//		- Make sure to create datastore directory in repo dir before calling this func.
 func Create(repoPath, pin string) (*SQLiteDatastore, error) {
-	dbDir := path.Join(repoPath, "datastore")
-	os.Mkdir(dbDir, os.ModePerm)
+	//dbDir := path.Join(repoPath, "datastore")
+	//os.Mkdir(dbDir, os.ModePerm)
 	dbPath := path.Join(repoPath, "datastore", "mainnet.db")
 	fmt.Printf("Create datastore to %s\n", dbPath)
 	conn, err := sql.Open("sqlite3", dbPath)
@@ -58,7 +60,7 @@ func Create(repoPath, pin string) (*SQLiteDatastore, error) {
 		db:                 conn,
 		lock:               lock,
 	}
-	res.InitTables("")
+	//res.InitTables("")
 	return res, nil
 }
 

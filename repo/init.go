@@ -21,15 +21,17 @@ const Repover = "19"
 
 // Judge whether this repo is already initialized.
 //		- For now we just check whether there is files in this repo
-func isInitialized(repoPath string) (bool, error) {
+func IsInitialized(repoPath string) bool {
 	files, err := ioutil.ReadDir(repoPath)
 	if err != nil {
-		return false, err
+		fmt.Printf("Error occur when read repo %s\n")
+		fmt.Printf("%s\n", err.Error())
+		return false
 	}
 	if len(files) > 1 {
-		return true, nil
+		return true
 	}
-	return false, nil
+	return false
 }
 
 func Init(repoPath string) error {
@@ -38,10 +40,7 @@ func Init(repoPath string) error {
 		err := os.Mkdir(repoPath, os.ModePerm)
 		if err != nil {return err}
 	} else {
-		isInit, err := isInitialized(repoPath)
-		if err != nil {
-			return err
-		}
+		isInit := IsInitialized(repoPath)
 		if isInit {
 			return ErrRepoExists
 		}

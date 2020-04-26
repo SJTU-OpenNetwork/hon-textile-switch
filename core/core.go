@@ -10,7 +10,10 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
-	"strings"
+	"os"
+	"path"
+
+	//"strings"
 	"sync"
 )
 
@@ -31,14 +34,14 @@ type Textile struct {
 	pinCode           string
 	config            *config.Config
 	ctx               context.Context
-	stop              func() error
+	//stop              func() error
 	node              *host.Host
-	started           bool
+	//started           bool
 	datastore         repo.Datastore
-	online            chan struct{}
-	done              chan struct{}
+	//online            chan struct{}
+	//done              chan struct{}
 	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
-	lock              sync.Mutex
+	//lock              sync.Mutex
     stream            *stream.StreamService
 }
 
@@ -76,10 +79,13 @@ func InitRepo(conf InitConfig) error {
 	}
 
 	//sqliteDb, err := db.Create(repoPath, "")
-	_, err = db.Create(repoPath, "")
+	dbDir := path.Join(repoPath, "datastore")
+	os.Mkdir(dbDir, os.ModePerm)
+	sqliteDb, err := db.Create(repoPath, "")
 	if err != nil {
 		return err
 	}
+	err = sqliteDb.InitTables("")
 	//err = sqliteDb.Config().Init("")
 	if err != nil {
 		return err
@@ -90,24 +96,22 @@ func InitRepo(conf InitConfig) error {
 	return nil
 }
 
+// NewTextile create a textile instance.
+// Note that the repo should be initialized before.
 func NewTextile(conf RunConfig) (*Textile, error) {
-    if !fsrepo.IsInitialized(conf.RepoPath) {
-		return nil, repo.ErrRepoDoesNotExist
-	}
-
-	// check if repo needs a major migration
-	err := repo.Stat(conf.RepoPath)
-	if err != nil {
-		return nil, err
+	repoPath := conf.RepoPath
+	if !repo.IsInitialized(repoPath){
+		fmt.Printf("Repo has not been initialized.\n")
+		return nil, fmt.Errorf("Repo %s has not been initialized.")
 	}
 
 	// force open the repo and datastore
-	removeLocks(conf.RepoPath)
+	// removeLocks(conf.RepoPath)
 
 	node := &Textile{
 		repoPath:          conf.RepoPath,
 	}
-
+	var err error
 	node.config, err = config.Read(node.repoPath)
 	if err != nil {
 		return nil, err
@@ -117,6 +121,7 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	node.datastore = sqliteDb
 
 	return node, nil
@@ -124,14 +129,6 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 
 // Start creates an ipfs node and starts textile services
 func (t *Textile) Start() error {
-	t.lock.Lock()
-	if t.started {
-		t.lock.Unlock()
-		return ErrStarted
-	}
-
-	t.online = make(chan struct{})
-	t.done = make(chan struct{})
 
 	// open db
     err := t.touchDatastore()
@@ -167,8 +164,8 @@ func (t *Textile) Start() error {
 // touchDatastore ensures that we have a good db connection
 func (t *Textile) touchDatastore() error {
 	if err := t.datastore.Ping(); err != nil {
-		log.Debug("re-opening datastore...")
-
+		//log.Debug("re-opening datastore...")
+		fmt.Printf("Error occur when ping datastore.\nTry to re-open datastore\n")
 		sqliteDB, err := db.Create(t.repoPath, t.pinCode)
 		if err != nil {
 			return err
@@ -177,42 +174,6 @@ func (t *Textile) touchDatastore() error {
 	}
 
 	return nil
-}
-
-type loggingWaitGroup struct {
-	n  string
-	wg sync.WaitGroup
-}
-
-func (lwg *loggingWaitGroup) Add(delta int, src string) {
-	lwg.wg.Add(delta)
-}
-
-func (lwg *loggingWaitGroup) Done(src string) {
-	lwg.wg.Done()
-}
-
-func (lwg *loggingWaitGroup) Wait(src string) {
-	lwg.wg.Wait()
-}
-
-func getTarget(output string) string {
-	str := strings.Split(output, " ")[1];
-	return str;
-}
-
-func getStatus(output string) bool {
-	str := strings.Split(output, " ")[2];
-	if str=="success"{
-		return true
-	}else {
-		return false
-	}
-}
-
-func getId(output string) string {
-	list := strings.Split(output, "/")
-	return list[len(list)-1]
 }
 
 func stringInSlice(a string, list []string) bool {
