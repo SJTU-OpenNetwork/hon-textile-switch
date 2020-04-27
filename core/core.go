@@ -42,6 +42,7 @@ type Textile struct {
 	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
 	//lock              sync.Mutex
     stream            *stream.StreamService
+	whiteList         repo.WhitrListStore
 }
 
 // common errors
@@ -90,7 +91,6 @@ func InitRepo(conf InitConfig) error {
 		return err
 	}
 
-
 	//return applyTextileConfigOptions(conf)
 	return nil
 }
@@ -123,6 +123,13 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 
 	node.datastore = sqliteDb
 
+	// load whiteList
+	whPath := path.Join(repoPath, "whitelist")
+	whiteList, err := repo.NewWhiteListStore(whPath)
+	if err != nil {
+		return nil, err
+	}
+	node.whiteList = whiteList
 	return node, nil
 }
 

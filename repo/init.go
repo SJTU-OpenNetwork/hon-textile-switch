@@ -63,6 +63,13 @@ func Init(repoPath string) error {
 		return err
 	}
 
+	// Create whitelist
+	whPath := path.Join(repoPath, "whitelist")
+	_, err = NewWhiteListStore(whPath)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

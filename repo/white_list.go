@@ -32,10 +32,6 @@ type WhiteList struct {
 
 
 // NewWhiteList Create a new whitelist.
-// It does the following things:
-//		- Create directory if not exists.
-//		- Judge whether their already be a whitelist. Raise an error if so.
-//		- Create Flock for this directory.
 func NewWhiteListStore(dirPath string) (*WhiteList, error) {
 	err := util.Mkdirp(dirPath)
 	if err != nil {

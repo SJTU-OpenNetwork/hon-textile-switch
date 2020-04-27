@@ -40,6 +40,7 @@ type StreamMetaStore interface {
 }
 
 type WhitrListStore interface {
-
+	Add(peerId string) error
+	Remove(peerId string) error
 }
 
