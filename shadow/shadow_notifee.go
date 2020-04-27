@@ -1,8 +1,9 @@
 package shadow
 
 import (
-"github.com/libp2p/go-libp2p-core/network"
-ma "github.com/multiformats/go-multiaddr"
+	"github.com/libp2p/go-libp2p-core/network"
+	ma "github.com/multiformats/go-multiaddr"
+	"fmt"
 )
 
 type ShadowNotifee ShadowService
@@ -20,7 +21,7 @@ func (*ShadowNotifee) ListenClose (net network.Network, addr ma.Multiaddr) {
 }
 
 func (sn *ShadowNotifee) Connected (net network.Network, conn network.Conn) {
-	//fmt.Printf("Notifee: Connect %s\n", conn.RemotePeer().Pretty())
+	fmt.Printf("Notifee: Connect %s\n", conn.RemotePeer().Pretty())
 	//conn.RemoteMultiaddr()
 	sn.manager().PeerConnected(conn.RemotePeer(), conn.RemoteMultiaddr())
 }
