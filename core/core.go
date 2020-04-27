@@ -14,7 +14,7 @@ import (
 	"path"
 
 	//"strings"
-	"sync"
+	//"sync"
 )
 
 
@@ -35,7 +35,7 @@ type Textile struct {
 	config            *config.Config
 	ctx               context.Context
 	//stop              func() error
-	node              *host.Host
+	node              host.Host
 	//started           bool
 	datastore         repo.Datastore
 	//online            chan struct{}
@@ -137,11 +137,12 @@ func (t *Textile) Start() error {
 	}
 
 	// create services
-	t.stream = service.NewStreamService(
-		t.node,
+	t.stream = stream.NewStreamService(
+		t.Host,
 		t.datastore,
-        t.SubscribeStream,
-		context.Background())//Share the same ctx with textile. That is because we do not need to manually cancel it.
+		t.repoPath,
+
+		)
 	t.shadow = shadow.NewShadowService(
         t.node,
         t.datastore,
@@ -158,6 +159,10 @@ func (t *Textile) Start() error {
     }()
 	t.started = true
     return nil
+}
+
+func (t *Textile) Host() host.Host{
+	return t.node
 }
 
 
