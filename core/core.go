@@ -1,15 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
-    "context"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
+	"github.com/libp2p/go-libp2p-core/host"
 	"os"
 	"path"
 
@@ -141,13 +140,15 @@ func (t *Textile) Start() error {
 		t.Host,
 		t.datastore,
 		t.repoPath,
-
+		t.SubscribeStream,
+		t.ctx,
 		)
 	t.shadow = shadow.NewShadowService(
-        t.node,
+        t.Host,
         t.datastore,
-        t.shadowMsgRecv)
-
+        t.shadowMsgRecv,
+        t.Host().ID().Pretty())
+/*
 	go func() {
 		defer func() {
 			close(t.online)
@@ -158,6 +159,9 @@ func (t *Textile) Start() error {
         t.shadow.Start()
     }()
 	t.started = true
+*/
+ 	t.stream.Start()
+ 	t.shadow.Start()
     return nil
 }
 
