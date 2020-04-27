@@ -8,12 +8,11 @@ import (
 
 // Package cmd define the command line instructions
 
-type cmdsMap map[string]func(string) error	// Store which func for each cmd
 
-// parseArg does two tasks:
+// Run() start the software
 //		- parse command parameters
 //		- call the functions in core package
-func parseArg() error{
+func Run() error {
 	numArgs := len(os.Args)
 	if numArgs <= 1 {
 		fmt.Printf("Not enough parameter.\n")
@@ -48,24 +47,5 @@ func parseArg() error{
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
 	}
-	return nil
-}
-
-// Run() start the software
-func Run() error {
-    //TODO: do not use template
-	cmds := make(cmdsMap)
-	cmds["init"] = func(path string) error {
-		cfg := core.InitConfig{RepoPath: path}
-		return core.InitRepo(cfg)
-	}
-	cmd := os.Args[1]
-    path := os.Args[2]
-	for key, value := range cmds {
-		if key == cmd {
-			return value(path)
-		}
-	}
-
 	return nil
 }
