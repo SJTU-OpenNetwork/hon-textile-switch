@@ -8,7 +8,8 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
-	"github.com/libp2p/go-libp2p-core/host"
+	p2phost "github.com/libp2p/go-libp2p-core/host"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
 	"os"
 	"path"
 
@@ -34,7 +35,7 @@ type Textile struct {
 	config            *config.Config
 	ctx               context.Context
 	//stop              func() error
-	node              host.Host
+	node              p2phost.Host
 	//started           bool
 	datastore         repo.Datastore
 	//online            chan struct{}
@@ -109,6 +110,7 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 
 	node := &Textile{
 		repoPath:          conf.RepoPath,
+		ctx:			   context.Background(),
 	}
 	var err error
 	node.config, err = config.Read(node.repoPath)
@@ -130,6 +132,13 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 		return nil, err
 	}
 	node.whiteList = whiteList
+
+	// Create host
+	node.node, err = host.NewHost(node.ctx)
+	if err != nil {
+		fmt.Printf("Error occur when create host\n")
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -181,7 +190,7 @@ func (t *Textile) Start() error {
     return nil
 }
 
-func (t *Textile) Host() host.Host{
+func (t *Textile) Host() p2phost.Host{
 	return t.node
 }
 
