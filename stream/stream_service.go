@@ -115,7 +115,7 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
         size := 0
         if len(blk.Data) != 0 {
             //TODO: save blk in file system
-            err := util.Store(h.repoPath, blk.Description, blk.Data)
+            err := util.WriteFileByPath(h.repoPath+"/"+blk.Description, blk.Data)
             if err != nil {
                 return nil, err
             }
@@ -296,7 +296,7 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
         if blk.Id != "" {
             //TODO: get block from database and file system
             var err error
-            data, err = util.Get(h.repoPath, blk.Id)
+            data, err = util.ReadFileByPath(h.repoPath, blk.Id)
 		    if err != nil {
 			    return err
 		    }

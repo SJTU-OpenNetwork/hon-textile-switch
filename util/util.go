@@ -5,12 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
-	"time"
-    "fmt"
-
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/timestamp"
+//	"strings"
+//	"time"
+//    "fmt"
+//
+//	"github.com/golang/protobuf/ptypes"
+//	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
 func UnmarshalString(body io.ReadCloser) (string, error) {
@@ -21,59 +21,59 @@ func UnmarshalString(body io.ReadCloser) (string, error) {
 	return TrimQuotes(string(data)), nil
 }
 
-func SplitString(in string, sep string) []string {
-	list := make([]string, 0)
-	for _, s := range strings.Split(in, sep) {
-		t := strings.TrimSpace(s)
-		if t != "" {
-			list = append(list, t)
-		}
-	}
-	return list
-}
-
-func EqualStringSlices(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func ProtoTime(ts *timestamp.Timestamp) time.Time {
-	return time.Unix(ts.Seconds, int64(ts.Nanos))
-}
-
-func ProtoNanos(ts *timestamp.Timestamp) int64 {
-	if ts == nil {
-		ts = ptypes.TimestampNow()
-	}
-	return int64(ts.Nanos) + ts.Seconds*1e9
-}
-
-func ProtoTs(nsec int64) *timestamp.Timestamp {
-	n := nsec / 1e9
-	sec := n
-	nsec -= n * 1e9
-	if nsec < 0 {
-		nsec += 1e9
-		sec--
-	}
-
-	return &timestamp.Timestamp{
-		Seconds: sec,
-		Nanos:   int32(nsec),
-	}
-}
-
-func ProtoTsIsNewer(ts1 *timestamp.Timestamp, ts2 *timestamp.Timestamp) bool {
-	return ProtoNanos(ts1) > ProtoNanos(ts2)
-}
-
+//func SplitString(in string, sep string) []string {
+//	list := make([]string, 0)
+//	for _, s := range strings.Split(in, sep) {
+//		t := strings.TrimSpace(s)
+//		if t != "" {
+//			list = append(list, t)
+//		}
+//	}
+//	return list
+//}
+//
+//func EqualStringSlices(a, b []string) bool {
+//	if len(a) != len(b) {
+//		return false
+//	}
+//	for i, v := range a {
+//		if v != b[i] {
+//			return false
+//		}
+//	}
+//	return true
+//}
+//
+//func ProtoTime(ts *timestamp.Timestamp) time.Time {
+//	return time.Unix(ts.Seconds, int64(ts.Nanos))
+//}
+//
+//func ProtoNanos(ts *timestamp.Timestamp) int64 {
+//	if ts == nil {
+//		ts = ptypes.TimestampNow()
+//	}
+//	return int64(ts.Nanos) + ts.Seconds*1e9
+//}
+//
+//func ProtoTs(nsec int64) *timestamp.Timestamp {
+//	n := nsec / 1e9
+//	sec := n
+//	nsec -= n * 1e9
+//	if nsec < 0 {
+//		nsec += 1e9
+//		sec--
+//	}
+//
+//	return &timestamp.Timestamp{
+//		Seconds: sec,
+//		Nanos:   int32(nsec),
+//	}
+//}
+//
+//func ProtoTsIsNewer(ts1 *timestamp.Timestamp, ts2 *timestamp.Timestamp) bool {
+//	return ProtoNanos(ts1) > ProtoNanos(ts2)
+//}
+//
 func TrimQuotes(s string) string {
 	if len(s) > 0 && s[0] == '"' {
 		s = s[1:]
@@ -113,28 +113,7 @@ func DirectoryExists(filePath string) bool {
 	return fileInfo.IsDir()
 }
 
-var ErrPathDoesNotExist = fmt.Errorf("path does not exist")
-var ErrDataDoesNotExist = fmt.Errorf("blockdata does not exist")
-
-// Store stores the received streamblock to path
-func Store(path string, filename string, data []byte) error{
-	//create dir if not exist
-	if !DirectoryExists(path) {
-		err := os.Mkdir(path, os.ModePerm)
-		if err != nil {
-			return err
-		}
-	} else {
-		err :=  ioutil.WriteFile(filename, data, os.ModePerm)
-		if err!=nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Get gets the data from path
-func Get(path string, filename string) ([]byte,error) {
+func ReadFileByPath(path string, filename string) ([]byte,error) {
 
 	// Check whether block data exists.
 	// Read block data if exist
