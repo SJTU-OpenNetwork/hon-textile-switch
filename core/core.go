@@ -169,6 +169,15 @@ func (t *Textile) Start() error {
 */
  	t.stream.Start()
  	t.shadow.Start()
+
+ 	// Outprint peer info
+ 	fmt.Printf("Host start with:\n")
+ 	fmt.Printf("PeerId: %s\n", t.node.ID().Pretty())
+ 	fmt.Printf("MultiAddr:\n")
+ 	for _, addr := range t.node.Addrs(){
+ 		fmt.Printf("%s\n", addr.String())
+	}
+
     return nil
 }
 
@@ -209,5 +218,8 @@ func Max(x, y int) int {
 	return x
 }
 
-
+func (t *Textile)Connect() error {
+	//t.node.Connect()
+	return nil
+}
 

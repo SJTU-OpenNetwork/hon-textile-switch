@@ -49,8 +49,10 @@ func Run() error {
             return err
         }
         textile.Start()
-		//cfg := core.InitConfig{RepoPath:os.Args[2]}
-		//return core.InitRepo(cfg)
+
+        // hang forever
+        select{}
+
 
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
