@@ -92,15 +92,6 @@ func (h *StreamService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, err
     }
 }
 
-func (h *StreamService) UnsubscribeStream(sid string) error{
-    fmt.Printf("StreamService: Try to unsubscribe stream %s\n", sid)
-    pid := h.providers.RemoveStream(sid)
-    if pid != peer.ID("") {
-        h.SendUnsubscribeRequest(pid.Pretty(), sid)
-    }
-    return nil
-}
-
 // ======================== FOR MESSAGE RECV/SEND ==================================
 // handleStreamBlock receives a STREAM_BLOCK_LIST message
 func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error) {
@@ -211,18 +202,6 @@ func (h *StreamService) SendStreamRequest(peerId string, config *pb.StreamReques
 		return nil,err
 	}
 	//log.Debugf("[%s] Stream %s, To %s", TAG_STREAMREQUEST, config.Id, peerId)
-	return h.service.SendRequest(peerId, env)
-}
-
-func (h *StreamService) SendUnsubscribeRequest(peerId string, sid string) (*pb.Envelope, error) {
-	//fmt.Printf("core/stream_service.go SendStreamRequest to %s\n", peerId)
-	env, err := h.service.NewEnvelope(pb.Message_STREAM_UNSUBSCRIBE, &pb.StreamUnsubscribe{
-        Id: sid,
-    }, nil, false)
-	if err != nil {
-		return nil,err
-	}
-	//log.Debugf("[%s] Stream %s, To %s", TAG_STREAMREQUEST, sid, peerId)
 	return h.service.SendRequest(peerId, env)
 }
 
@@ -365,15 +344,16 @@ func (h *StreamService)PeerDisconnected(pid peer.ID) {
 	// Stop all the workers
 	//log.Debugf("Peer %s disconnected", pid)
 	h.activeWorkers.endPeer(pid.Pretty())
+    
     provider := h.providers.remove(pid.Pretty())
     if provider != nil{
         // re-subscribe streams
-        for _,stream := range(provider.subStreams) {
-            err := h.subscribe(stream.streamId)
-            if err != nil{
-                //log.Error(err)
-            }
-        }
+//        for _,stream := range(provider.subStreams) {
+//            err := h.subscribe(stream.streamId)
+//            if err != nil{
+//                //log.Error(err)
+//            }
+//        }
     }
 }
 

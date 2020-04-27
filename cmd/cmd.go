@@ -41,6 +41,14 @@ func Run() error {
 			fmt.Printf("shadow start <repo path>\n")
 			return nil
 		}
+        cfg := core.RunConfig{
+            RepoPath: os.Args[2],
+        }
+        textile, err := core.NewTextile(cfg)
+        if err != nil {
+            return err
+        }
+        textile.Start()
 		//cfg := core.InitConfig{RepoPath:os.Args[2]}
 		//return core.InitRepo(cfg)
 
