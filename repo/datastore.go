@@ -39,3 +39,7 @@ type StreamMetaStore interface {
 	List() *pb.StreamMetaList
 }
 
+type WhitrListStore interface {
+
+}
+
