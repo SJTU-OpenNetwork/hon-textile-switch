@@ -53,6 +53,26 @@ func Run() error {
         // hang forever
         select{}
 
+	case "connect":
+		if numArgs <= 2 {
+			fmt.Printf("Not enough parameter\n")
+			return nil
+		}
+		if os.Args[3] == "help" {
+			fmt.Printf("shadow connect <peer id> <address>")
+			return nil
+		} else if numArgs <= 3 {
+			fmt.Printf("Not enough parameter\n")
+			return nil
+		}
+
+		peerId := os.Args[3]
+		address := os.Args[4]
+		err := NewApi().Call(peerId + " " + address)
+		if err != nil {
+			fmt.Printf("Error occurs when calling api.\n")
+			fmt.Printf("Error:%s\n", err.Error())
+		}
 
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
