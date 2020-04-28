@@ -58,7 +58,7 @@ func Run() error {
 			fmt.Printf("Not enough parameter\n")
 			return nil
 		}
-		if os.Args[3] == "help" {
+		if os.Args[2] == "help" {
 			fmt.Printf("shadow connect <peer id> <address>")
 			return nil
 		} else if numArgs <= 3 {
@@ -66,8 +66,8 @@ func Run() error {
 			return nil
 		}
 
-		peerId := os.Args[3]
-		address := os.Args[4]
+		peerId := os.Args[2]
+		address := os.Args[3]
 		err := NewApi().Call(peerId + " " + address)
 		if err != nil {
 			fmt.Printf("Error occurs when calling api.\n")
