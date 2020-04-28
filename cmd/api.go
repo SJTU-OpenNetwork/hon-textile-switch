@@ -26,7 +26,7 @@ func NewApi() *Api {
 // open a bufio.ReadWriter to addr
 func (a *Api) open(addr string) (*bufio.ReadWriter, error) {
 	fmt.Println("Dial " + addr)
-	conn, err := net.Dial("tcp", addr)
+	conn, err := net.Dial("tcp", "127.0.0.1:40100")
 	if err != nil {
 		return nil, errors.Wrap(err, "Dialing "+addr+" failed")
 	}
