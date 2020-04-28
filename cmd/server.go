@@ -14,6 +14,10 @@ type Server struct {
 	//taskQueue chan net.Conn
 }
 
+func NewServer() *Server {
+	return &Server{}
+}
+
 func (s *Server) Listen() error {
 	var err error
 	s.listener, err = net.Listen("tcp", ApiPort)

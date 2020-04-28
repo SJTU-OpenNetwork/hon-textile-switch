@@ -49,9 +49,9 @@ func Run() error {
             return err
         }
         textile.Start()
-
+		err = NewServer().Listen()
+		return err
         // hang forever
-        select{}
 
 	case "connect":
 		if numArgs <= 2 {
