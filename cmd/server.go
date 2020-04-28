@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 )
 
 // Server handle request from other routine
@@ -44,16 +45,14 @@ func (s *Server) handleMessage(conn net.Conn) {
 		switch  {
 		case err == io.EOF:
 			fmt.Println("Read command successfully.")
-			fmt.Printf("Get command: %s\n", cmd)
-			rw.WriteString("ok")
-			rw.Flush()
 			return
 		case err != nil:
 			fmt.Println("Read command fail.\nError:%s\n", err.Error())
 			return
 		}
-
-		//cmd = strings.Trim(cmd, "\n ")
-
+		cmd = strings.Trim(cmd, "\n")
+		fmt.Printf("Get command: %s\n", cmd)
+		rw.WriteString("ok\n")
+		rw.Flush()
 	}
 }

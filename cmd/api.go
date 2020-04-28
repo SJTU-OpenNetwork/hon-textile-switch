@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"net"
 	"strconv"
+	"strings"
 )
 // api.go implements a simple tcp c/s framework to transport msg between textile-shadow routine.
 
@@ -39,7 +40,7 @@ func (a *Api) Call(cmd string) error {
 		fmt.Printf("Api client can not connect to %s", ApiLocal+ApiPort)
 		return err
 	}
-	n, err := rw.WriteString(cmd)
+	n, err := rw.WriteString(cmd+"\n")
 	if err != nil {
 		return errors.Wrap(err, "Could not send the STRING request ("+strconv.Itoa(n)+" bytes written)\n")
 	}
@@ -53,6 +54,7 @@ func (a *Api) Call(cmd string) error {
 	if err != nil {
 		return errors.Wrap(err, "Client: Failed to read the reply.\n")
 	}
+	response = strings.Trim(response, "\n")
 	fmt.Printf("Get response: %s", response)
 	return nil
 }
