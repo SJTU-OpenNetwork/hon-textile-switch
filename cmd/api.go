@@ -39,10 +39,16 @@ func (a *Api) Call(cmd string) error {
 		fmt.Printf("Api client can not connect to %s", ApiLocal+ApiPort)
 		return err
 	}
-	n, err := rw.WriteString("string\n")
+	n, err := rw.WriteString(cmd)
 	if err != nil {
 		return errors.Wrap(err, "Could not send the STRING request ("+strconv.Itoa(n)+" bytes written)\n")
 	}
+	err = rw.Flush()
+	if err != nil {
+		fmt.Printf("Error occur when flush rw buffer.\n")
+		return err
+	}
+
 	response, err := rw.ReadString('\n')
 	if err != nil {
 		return errors.Wrap(err, "Client: Failed to read the reply.\n")

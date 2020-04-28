@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strings"
 )
 
 // Server handle request from other routine
@@ -25,7 +24,7 @@ func (s *Server) Listen() error {
 		fmt.Printf("Error occurs when try to listen port %s for api.", ApiPort)
 		return err
 	}
-	fmt.Printf("Listen %s for api service.", s.listener.Addr().String())
+	fmt.Printf("Listen %s for api service.\n", s.listener.Addr().String())
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
@@ -44,14 +43,17 @@ func (s *Server) handleMessage(conn net.Conn) {
 		cmd, err := rw.ReadString('\n')
 		switch  {
 		case err == io.EOF:
-			fmt.Println("Read command successfully.\n")
+			fmt.Println("Read command successfully.")
+			fmt.Printf("Get command: %s\n", cmd)
+			rw.WriteString("ok")
+			rw.Flush()
 			return
 		case err != nil:
 			fmt.Println("Read command fail.\nError:%s\n", err.Error())
 			return
 		}
 
-		cmd = strings.Trim(cmd, "\n ")
+		//cmd = strings.Trim(cmd, "\n ")
 
 	}
 }
