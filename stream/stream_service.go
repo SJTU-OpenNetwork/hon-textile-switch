@@ -104,15 +104,20 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
     }
     for _, blk := range blks.Blocks {
         size := 0
+        m := make(map[string]string)
+        err := json.Unmarshal(blk.Description, &m)
+        if err != nil{
+            return nil, err
+        }
         if len(blk.Data) != 0 {
             //TODO: save blk in file system
-            err := util.WriteFileByPath(h.repoPath+"/"+blk.Description, blk.Data)
+            err := util.WriteFileByPath(h.repoPath+"/"+m["CID"], blk.Data)
             if err != nil {
                 return nil, err
             }
         }
         model := &pb.StreamBlock {
-            Id: blk.Description,
+            Id: m["CID"],  //get id from description
             Streamid: blk.StreamID,
             Index: blk.Index,
             Size: int32(size),
@@ -285,7 +290,7 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
             Index: blk.Index,
             Data: data,
             IsRoot: blk.IsRoot,
-            Description: blk.Id,
+            Description: []byte(blk.Description),
         }
         //log.Debugf("[%s] Block %s, Stream %s, Index %d, To %s, Size %d, description: %s", TAG_BLOCKSEND, blk.Id, blk.Streamid, blk.Index, peerId.Pretty(), blk.Size, blk.Description)
         blist.Blocks = append(blist.Blocks, content)
