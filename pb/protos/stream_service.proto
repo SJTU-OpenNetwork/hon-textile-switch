@@ -36,12 +36,3 @@ message StreamUnsubscribe {
 message StreamUnsubscribeAck {
     string id = 1;
 }
-
-// StreamClose is used to tell other peers that a stream is closed.
-//  - streamId: Id of stream.
-//  - maxIndex: Maximum index of blocks.
-//              Receiver will detect the lost blocks according to it.
-message StreamClose {
-    string streamId = 1;
-    uint64 maxIndex = 2;
-}

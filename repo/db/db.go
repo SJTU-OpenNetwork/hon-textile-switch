@@ -8,18 +8,18 @@ import (
 	"sync"
 
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
-	"github.com/golang/protobuf/jsonpb"
+//	"github.com/golang/protobuf/jsonpb"
 	_ "github.com/mutecomm/go-sqlcipher"
 )
 
 
-var pbMarshaler = jsonpb.Marshaler{
-	OrigName: true,
-}
-
-var pbUnmarshaler = jsonpb.Unmarshaler{
-	AllowUnknownFields: true,
-}
+//var pbMarshaler = jsonpb.Marshaler{
+//	OrigName: true,
+//}
+//
+//var pbUnmarshaler = jsonpb.Unmarshaler{
+//	AllowUnknownFields: true,
+//}
 
 type SQLiteDatastore struct {
 	streammetas		   repo.StreamMetaStore
