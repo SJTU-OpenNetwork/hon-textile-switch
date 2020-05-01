@@ -1,35 +1,20 @@
 package core
 
 import (
-	"bytes"
 	"context"
-	"encoding/hex"
 	"fmt"
-	"math"
-	"strings"
-	"sync"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	protocol "github.com/libp2p/go-libp2p-core/protocol"
-	protocol "github.com/libp2p/go-libp2p-pubsub"
-	"github.com/mr-tron/base58/base58"
-	"github.com/segmentio/ksuid"
-	"github.com/SJTU-OpenNetwork/hon-textile/broadcast"
-	"github.com/SJTU-OpenNetwork/hon-textile/common"
-	"github.com/SJTU-OpenNetwork/hon-textile/jwt"
-	"github.com/SJTU-OpenNetwork/hon-textile/keypair"
-	"github.com/SJTU-OpenNetwork/hon-textile/pb"
-	"github.com/SJTU-OpenNetwork/hon-textile/repo"
-	"github.com/SJTU-OpenNetwork/hon-textile/repo/config"
-	"github.com/SJTU-OpenNetwork/hon-textile/repo/db"
-	"github.com/SJTU-OpenNetwork/hon-textile/service"
-	"github.com/SJTU-OpenNetwork/hon-textile/stream"
-	"github.com/SJTU-OpenNetwork/hon-textile/shadow"
-	"golang.org/x/crypto/bcrypt"
+    //pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
 )
 
 // maxQueryWaitSeconds is used to limit a query request's max wait time
@@ -56,24 +41,21 @@ const cafeServiceProtocol = protocol.ID("/textile/cafe/1.0.0")
 type CafeService struct {
 	service         *service.Service
 	datastore       repo.Datastore
-	queryResults    *broadcast.Broadcaster
 	inFlightQueries map[string]struct{}
     stream          *stream.StreamService
 }
 
 // NewCafeService returns a new threads service
 func NewCafeService(
-	node func() *core.IpfsNode,
+	node func() host.Host,
 	datastore repo.Datastore,
     stream  *stream.StreamService) *CafeService {
 	handler := &CafeService{
 		datastore:       datastore,
-		inbox:           inbox,
-		queryResults:    broadcast.NewBroadcaster(10),
 		inFlightQueries: make(map[string]struct{}),
         stream:          stream,
 	}
-	handler.service = service.NewService(account, handler, node)
+	handler.service = service.NewService(handler, node)
 	return handler
 }
 
@@ -103,25 +85,7 @@ func (h *CafeService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error
 
 // HandleStream is called by the underlying service handler method
 func (h *CafeService) HandleStream(env *pb.Envelope, pid peer.ID) (chan *pb.Envelope, chan error, chan interface{}) {
-	renvCh := make(chan *pb.Envelope)
-	errCh := make(chan error)
-	cancelCh := make(chan interface{})
-
-    log.Debug("HandleStream")
-	go func() {
-		defer close(renvCh)
-
-		var err error
-		switch env.Message.Type {
-		case pb.Message_CAFE_QUERY:
-			err = h.handleQuery(env, pid, renvCh, cancelCh)
-		}
-		if err != nil {
-			errCh <- err
-		}
-	}()
-
-	return renvCh, errCh, cancelCh
+	return make(chan *pb.Envelope), make(chan error), make(chan interface{})
 }
 
 
@@ -139,7 +103,6 @@ func (h *CafeService) searchLocal(qtype pb.Query_Type, options *pb.QueryOptions,
 		q := new(pb.StreamQuery)
 		err := ptypes.UnmarshalAny(payload, q)
 		if err != nil {
-            log.Error(err)
 			return nil, err
 		}
 
@@ -153,7 +116,7 @@ func (h *CafeService) searchLocal(qtype pb.Query_Type, options *pb.QueryOptions,
             break
         }
 
-        peerId := h.service.Node().Identity.Pretty()
+        peerId := h.service.Node().ID().Pretty()
 		result := &pb.StreamQueryResultItem {
 			Hopcnt: 0,
 		}
@@ -295,7 +258,7 @@ func (h *CafeService) handlePubSubQuery(env *pb.Envelope, pid peer.ID) (*pb.Enve
 
 	err = h.service.SendMessage(ctx, pid.Pretty(), renv)
 	if err != nil {
-		log.Warningf("error sending message response to %s: %s", pid, err)
+		fmt.Printf("error sending message response to %s: %s", pid, err)
 	}
 	return nil, nil
 }
