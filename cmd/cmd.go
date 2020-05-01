@@ -49,10 +49,10 @@ func Run() error {
             return err
         }
         textile.Start()
-		//err = NewServer().Listen()
+		err = NewServer().Listen()
 		return err
         // hang forever
-/*
+
 	case "connect":
 		if numArgs <= 2 {
 			fmt.Printf("Not enough parameter\n")
@@ -73,7 +73,7 @@ func Run() error {
 			fmt.Printf("Error occurs when calling api.\n")
 			fmt.Printf("Error:%s\n", err.Error())
 		}
-*/
+
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
 	}
