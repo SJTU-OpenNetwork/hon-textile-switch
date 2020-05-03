@@ -20,7 +20,9 @@ type Server struct {
 }
 
 func NewServer(node *core.Textile) *Server {
-	return &Server{}
+	return &Server{
+		node: node,
+	}
 }
 
 func (s *Server) Listen() error {
