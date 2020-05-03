@@ -3,18 +3,23 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/core"
 	"io"
 	"net"
 	"strings"
 )
 
+// TODO:
+//		Use seperate goroutine to handle each command
+
 // Server handle request from other routine
 type Server struct {
 	listener net.Listener
+	node *core.Textile
 	//taskQueue chan net.Conn
 }
 
-func NewServer() *Server {
+func NewServer(node *core.Textile) *Server {
 	return &Server{}
 }
 
@@ -52,7 +57,44 @@ func (s *Server) handleMessage(conn net.Conn) {
 		}
 		cmd = strings.Trim(cmd, "\n")
 		fmt.Printf("Get command: %s\n", cmd)
-		rw.WriteString("ok\n")
+
+		// handle specific command
+		cmd_formatted := buildCommand(cmd)
+		switch cmd_formatted.cmd {
+		case "connect":
+			err = s.api_connect(cmd_formatted.args)
+		default:
+			err = fmt.Errorf("Unknown cmd: %s", cmd_formatted.cmd)
+		}
+		if err != nil {
+			fmt.Printf("Error occurs when execute command.\nError:%s\n", err.Error())
+			rw.WriteString("error\n")
+		}else {
+			rw.WriteString("ok\n")
+		}
+
 		rw.Flush()
 	}
+}
+
+// Format the string command
+func buildCommand(cmd string) *command {
+	params :=  strings.Split(cmd, " ")
+	res := &command{
+		cmd: "",
+		args: make([]string,1),
+	}
+	for i, p := range params {
+		if i==0 {
+			res.cmd = p
+		} else {
+			res.args = append(res.args, p)
+		}
+	}
+	return res
+}
+
+type command struct {
+	cmd string
+	args []string
 }

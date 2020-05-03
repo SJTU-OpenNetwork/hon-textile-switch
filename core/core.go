@@ -10,10 +10,10 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
 	p2phost "github.com/libp2p/go-libp2p-core/host"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
-//	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"os"
 	"path"
-//	ma "github.com/multiformats/go-multiaddr"
+	ma "github.com/multiformats/go-multiaddr"
 
 	//"strings"
 	//"sync"
@@ -229,21 +229,21 @@ func Max(x, y int) int {
 	return x
 }
 
-//func (t *Textile)Connect(peerId string, addr string) error {
-//	mulAddr, err := ma.NewMultiaddr(addr)
-//	if err != nil {
-//		fmt.Printf("Error occur when build multi address from %s\n", addr)
-//		return err
-//	}
-//	pi := peer.AddrInfo{
-//		ID:    peer.ID(peerId),
-//		Addrs: []ma.Multiaddr{mulAddr},
-//	}
-//	err = t.node.Connect(t.ctx, pi)
-//	if err != nil {
-//		fmt.Printf("Error occur when connect %s:%s\n", peerId, addr)
-//		return err
-//	}
-//	return nil
-//}
+func (t *Textile)Connect(peerId string, addr string) error {
+	mulAddr, err := ma.NewMultiaddr(addr)
+	if err != nil {
+		fmt.Printf("Error occur when build multi address from %s\n", addr)
+		return err
+	}
+	pi := peer.AddrInfo{
+		ID:    peer.ID(peerId),
+		Addrs: []ma.Multiaddr{mulAddr},
+	}
+	err = t.node.Connect(t.ctx, pi)
+	if err != nil {
+		fmt.Printf("Error occur when connect %s:%s\n", peerId, addr)
+		return err
+	}
+	return nil
+}
 

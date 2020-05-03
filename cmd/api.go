@@ -34,6 +34,7 @@ func (a *Api) open(addr string) (*bufio.ReadWriter, error) {
 	return bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)), nil
 }
 
+// Call send the cmd to api server and get the result from api server.
 func (a *Api) Call(cmd string) error {
 	rw, err := a.open(ApiLocal+ApiPort)
 	if err != nil {

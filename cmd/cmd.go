@@ -49,7 +49,7 @@ func Run() error {
             return err
         }
         textile.Start()
-		err = NewServer().Listen()
+		err = NewServer(textile).Listen()
 		return err
         // hang forever
 
@@ -68,7 +68,7 @@ func Run() error {
 
 		peerId := os.Args[2]
 		address := os.Args[3]
-		err := NewApi().Call(peerId + " " + address)
+		err := NewApi().Call("connect" + " " + peerId + " " + address)
 		if err != nil {
 			fmt.Printf("Error occurs when calling api.\n")
 			fmt.Printf("Error:%s\n", err.Error())
