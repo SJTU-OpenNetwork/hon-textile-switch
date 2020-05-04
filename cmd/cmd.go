@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/core"
 	"os"
 )
 
@@ -55,14 +56,10 @@ func Run() error {
 		fmt.Printf("Error occurs when marshal json command:\n%s\n", err.Error())
 		return err
 	}
-	err = SendCmd(strcmd)
-	if err != nil {
-		fmt.Printf("Error occurs when send json command to api server\n%s\n", err.Error())
-		return err
-	}
+
 	// call functions in core
-	/*
-	switch os.Args[1] {
+
+	switch tmpcmd.cmd {
 	case "init":
 		if numArgs <= 2{
 			fmt.Printf("Not enough parameter.\n")
@@ -108,17 +105,15 @@ func Run() error {
 			return nil
 		}
 
-		peerId := os.Args[2]
-		address := os.Args[3]
-		err := SendCmd("connect" + " " + peerId + " " + address)
+		err = SendCmd(strcmd)
 		if err != nil {
-			fmt.Printf("Error occurs when calling api.\n")
-			fmt.Printf("Error:%s\n", err.Error())
+			fmt.Printf("Error occurs when send json command to api server\n%s\n", err.Error())
+			return err
 		}
 
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
 	}
-	 */
+
 	return nil
 }
