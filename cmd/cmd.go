@@ -32,8 +32,9 @@ func buildCommand() *command {
 	return res
 }
 
-func (cmd command)marshal() (string, error) {
-	js, err := json.Marshal(cmd)
+func marshalCommand(tmpcmd *command) (string, error) {
+	fmt.Printf("Try to marshal %s command\n", tmpcmd.cmd)
+	js, err := json.Marshal(tmpcmd)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +52,7 @@ func Run() error {
 		return nil
 	}
 	tmpcmd := buildCommand()
-	strcmd, err := tmpcmd.marshal()
+	strcmd, err := marshalCommand(tmpcmd)
 	if err != nil {
 		fmt.Printf("Error occurs when marshal json command:\n%s\n", err.Error())
 		return err
