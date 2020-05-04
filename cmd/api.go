@@ -11,7 +11,7 @@ import (
 )
 // api.go implements a simple tcp c/s framework to transport msg between textile-shadow routine.
 
-const ApiPort = ":40100"
+const ApiPort = ":40101" //Avoid conflicting with original textile api port
 const ApiLocal = "localhost"
 
 // openRw open a bufio.ReadWriter to addr
