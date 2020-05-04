@@ -235,8 +235,15 @@ func (t *Textile)Connect(peerId string, addr string) error {
 		fmt.Printf("Error occur when build multi address from %s\n", addr)
 		return err
 	}
+	// Note that peerId is encoded string
+	// We need to decode it to get the real peerId
+	decodedId, err := peer.IDB58Decode(peerId)
+	if err != nil {
+		fmt.Printf("Error occur when decode peerId\n%s\n", err.Error())
+		return err
+	}
 	pi := peer.AddrInfo{
-		ID:    peer.ID(peerId),
+		ID:    decodedId,
 		Addrs: []ma.Multiaddr{mulAddr},
 	}
 	fmt.Printf("Try to connect with peer info:\nPeerId: %s\naddress: %s\n", pi.ID.Pretty(), addr)
