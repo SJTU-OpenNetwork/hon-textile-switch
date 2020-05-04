@@ -19,11 +19,10 @@ type command struct {
 
 // buildCommand build a command from command line parameters
 func buildCommand() *command {
-	fmt.Print(os.Args)
-	fmt.Printf("length of os.Args: %d\n", len(os.Args))
+	
 	res := &command{
 		Type: "",
-		Args: make([]string,1),
+		Args: make([]string,0),
 	}
 	var tmpCount = 0
 
