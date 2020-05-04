@@ -63,7 +63,7 @@ func (s *Server) handleMessage(conn net.Conn) {
 
 		// handle specific command
 		//cmd_formatted := buildCommand(cmd)
-		cmd_formatted := command{}
+		cmd_formatted := &command{}
 		err = json.Unmarshal([]byte(cmd), cmd_formatted)
 		if err != nil {
 			fmt.Printf("Error occurs when unmarshal json command\n%s\n", err.Error())
