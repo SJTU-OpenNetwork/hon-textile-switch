@@ -239,7 +239,7 @@ func (t *Textile)Connect(peerId string, addr string) error {
 		ID:    peer.ID(peerId),
 		Addrs: []ma.Multiaddr{mulAddr},
 	}
-	fmt.Printf("Try to connect with peer info:\nPeerId: %s\naddress: %s\n", peerId, addr)
+	fmt.Printf("Try to connect with peer info:\nPeerId: %s\naddress: %s\n", pi.ID.Pretty(), addr)
 	err = t.node.Connect(t.ctx, pi)
 	if err != nil {
 		fmt.Printf("Error occur when connect %s:%s\n", peerId, addr)

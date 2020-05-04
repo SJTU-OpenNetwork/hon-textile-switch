@@ -19,7 +19,7 @@ type command struct {
 
 // buildCommand build a command from command line parameters
 func buildCommand() *command {
-	
+
 	res := &command{
 		Type: "",
 		Args: make([]string,0),
