@@ -14,18 +14,8 @@ import (
 const ApiPort = ":40100"
 const ApiLocal = "localhost"
 
-// Api propose methods called by other methods
-type Api struct {
-	//node *core.Textile
-	//listener net.Listener
-}
-
-func NewApi() *Api {
-	return &Api{}
-}
-
-// open a bufio.ReadWriter to addr
-func (a *Api) open(addr string) (*bufio.ReadWriter, error) {
+// openRw open a bufio.ReadWriter to addr
+func openRw(addr string) (*bufio.ReadWriter, error) {
 	fmt.Println("Dial " + addr)
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -35,8 +25,8 @@ func (a *Api) open(addr string) (*bufio.ReadWriter, error) {
 }
 
 // Call send the cmd to api server and get the result from api server.
-func (a *Api) Call(cmd string) error {
-	rw, err := a.open(ApiLocal+ApiPort)
+func SendCmd(cmd string) error {
+	rw, err := openRw(ApiLocal+ApiPort)
 	if err != nil {
 		fmt.Printf("Api client can not connect to %s", ApiLocal+ApiPort)
 		return err

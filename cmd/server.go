@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/core"
 	"io"
@@ -61,7 +62,16 @@ func (s *Server) handleMessage(conn net.Conn) {
 		fmt.Printf("Get command: %s\n", cmd)
 
 		// handle specific command
-		cmd_formatted := buildCommand(cmd)
+		//cmd_formatted := buildCommand(cmd)
+		cmd_formatted := command{
+			cmd:  "",
+			args: nil,
+		}
+		err = json.Unmarshal([]byte(cmd), cmd_formatted)
+		if err != nil {
+			fmt.Printf("Error occurs when unmarshal json command\n%s\n", err.Error())
+			return
+		}
 		switch cmd_formatted.cmd {
 		case "connect":
 			err = s.api_connect(cmd_formatted.args)
@@ -79,24 +89,3 @@ func (s *Server) handleMessage(conn net.Conn) {
 	}
 }
 
-// Format the string command
-func buildCommand(cmd string) *command {
-	params :=  strings.Split(cmd, " ")
-	res := &command{
-		cmd: "",
-		args: make([]string,1),
-	}
-	for i, p := range params {
-		if i==0 {
-			res.cmd = p
-		} else {
-			res.args = append(res.args, p)
-		}
-	}
-	return res
-}
-
-type command struct {
-	cmd string
-	args []string
-}
