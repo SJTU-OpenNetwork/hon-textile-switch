@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/core"
 	"os"
+	"strings"
 )
 
 // Package cmd define the command line instructions
@@ -22,12 +23,20 @@ func buildCommand() *command {
 		Type: "",
 		Args: make([]string,1),
 	}
-	for i, p := range os.Args {
-		if i==1 {
-			res.Type = p
-		} else if i>1{
-			res.Args = append(res.Args, p)
+	var tmpCount = 0
+
+	for _, p := range os.Args {
+		// Remove the empty args (I have no idea why they appear)
+		pTrim := strings.Trim(p, " ")
+		if pTrim != "" {
+			if tmpCount==1 {
+				res.Type = p
+			} else if tmpCount > 1 {
+				res.Args = append(res.Args, p)
+			}
+			tmpCount += 1
 		}
+
 	}
 	return res
 }
