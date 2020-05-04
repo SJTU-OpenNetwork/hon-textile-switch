@@ -63,20 +63,17 @@ func (s *Server) handleMessage(conn net.Conn) {
 
 		// handle specific command
 		//cmd_formatted := buildCommand(cmd)
-		cmd_formatted := command{
-			cmd:  "",
-			args: nil,
-		}
+		cmd_formatted := command{}
 		err = json.Unmarshal([]byte(cmd), cmd_formatted)
 		if err != nil {
 			fmt.Printf("Error occurs when unmarshal json command\n%s\n", err.Error())
 			return
 		}
-		switch cmd_formatted.cmd {
+		switch cmd_formatted.Type {
 		case "connect":
-			err = s.api_connect(cmd_formatted.args)
+			err = s.api_connect(cmd_formatted.Args)
 		default:
-			err = fmt.Errorf("Unknown cmd: %s", cmd_formatted.cmd)
+			err = fmt.Errorf("Unknown cmd: %s", cmd_formatted.Type)
 		}
 		if err != nil {
 			fmt.Printf("Error occurs when execute command.\nError:%s\n", err.Error())

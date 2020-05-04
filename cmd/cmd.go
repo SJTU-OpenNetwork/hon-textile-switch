@@ -12,28 +12,28 @@ import (
 // command is the basic struct pass between api server and client
 // It can be marshal to a json string and unmarshal at server.
 type command struct {
-	cmd string
-	args []string
+	Type string `json:"type"`
+	Args []string `json:"args"`
 }
 
 // buildCommand build a command from command line parameters
 func buildCommand() *command {
 	res := &command{
-		cmd: "",
-		args: make([]string,1),
+		Type: "",
+		Args: make([]string,1),
 	}
 	for i, p := range os.Args {
 		if i==1 {
-			res.cmd = p
+			res.Type = p
 		} else if i>1{
-			res.args = append(res.args, p)
+			res.Args = append(res.Args, p)
 		}
 	}
 	return res
 }
 
 func marshalCommand(tmpcmd *command) (string, error) {
-	fmt.Printf("Try to marshal %s command\n", tmpcmd.cmd)
+	fmt.Printf("Try to marshal %s command\n", tmpcmd.Type)
 	js, err := json.Marshal(tmpcmd)
 	if err != nil {
 		return "", err
