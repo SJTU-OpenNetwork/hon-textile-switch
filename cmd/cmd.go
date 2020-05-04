@@ -32,7 +32,7 @@ func buildCommand() *command {
 	return res
 }
 
-func (cmd *command)marshal() (string, error) {
+func (cmd command)marshal() (string, error) {
 	js, err := json.Marshal(cmd)
 	if err != nil {
 		return "", err
