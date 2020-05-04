@@ -19,6 +19,7 @@ type command struct {
 
 // buildCommand build a command from command line parameters
 func buildCommand() *command {
+	fmt.Print(os.Args)
 	res := &command{
 		Type: "",
 		Args: make([]string,1),
@@ -30,9 +31,9 @@ func buildCommand() *command {
 		pTrim := strings.Trim(p, " ")
 		if pTrim != "" {
 			if tmpCount==1 {
-				res.Type = p
+				res.Type = pTrim
 			} else if tmpCount > 1 {
-				res.Args = append(res.Args, p)
+				res.Args = append(res.Args, pTrim)
 			}
 			tmpCount += 1
 		}
