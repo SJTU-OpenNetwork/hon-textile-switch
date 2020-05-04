@@ -60,7 +60,7 @@ func Run() error {
 
 	// call functions in core
 
-	switch tmpcmd.cmd {
+	switch tmpcmd.Type {
 	case "init":
 		if numArgs <= 2{
 			fmt.Printf("Not enough parameter.\n")
