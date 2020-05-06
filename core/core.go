@@ -136,7 +136,7 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 	node.whiteList = whiteList
 
 	// Create host
-	node.node, err = host.NewHost(node.ctx)
+	node.node, err = host.NewHost(node.ctx, node.repoPath, node.config)
 	if err != nil {
 		fmt.Printf("Error occur when create host\n")
 		return nil, err
