@@ -70,6 +70,10 @@ func Init(repoPath string) error {
 		return err
 	}
 
+	// Write swarm.key
+	skPath := path.Join(repoPath, "swarm.key")
+	err = util.WriteFileByPath(skPath, []byte(defaultSwarmKey))
+
 	return nil
 }
 
