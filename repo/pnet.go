@@ -3,7 +3,6 @@ package repo
 import (
 	"bytes"
 	"fmt"
-	"github.com/libp2p/go-libp2p"
 	pnet "github.com/libp2p/go-libp2p-pnet"
 	ipnet "github.com/libp2p/go-libp2p-core/pnet"
 	"io/ioutil"
