@@ -14,7 +14,7 @@ import (
 // provide methods to get libpp2p protector
 
 const swarmKeyFile = "swarm.key"
-const defaultSwarmKey = "/key/swarm/psk/1.0.0/\nbase16/\n7894ae706f3b54675785afd43a5a554463744e89594ab6e274fb817ccd9a58d4\n"
+const defaultSwarmKey = "/key/swarm/psk/1.0.0/\n/base16/\n7894ae706f3b54675785afd43a5a554463744e89594ab6e274fb817ccd9a58d4\n"
 
 // swarmKey read the swarmKeyFile
 func swarmKey(repoPath string) ([]byte, error) {
