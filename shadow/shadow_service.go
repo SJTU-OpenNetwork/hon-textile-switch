@@ -29,6 +29,7 @@ type ShadowService struct {
 	msgRecv          func(*pb.Envelope, peer.ID) error
 	address			 string  // public key. textile.account.Address()
     users            []peer.ID //if isShadow == true, it maintains its user list
+    whiteList        repo.WhiteListStore
 	lock             sync.Mutex
 }
 
@@ -43,12 +44,13 @@ func NewShadowService(
 	msgRecv func(*pb.Envelope, peer.ID) error,
 	address string,
 	key crypto.PrivKey,
+	whiteList repo.WhiteListStore,
 ) *ShadowService {
 	handler := &ShadowService{
 		datastore:        datastore,
 		msgRecv:          msgRecv,
 		address:		  address,
-
+		whiteList:		  whiteList,
 	}
 	handler.service = service.NewService(handler, node, key)
 	return handler
@@ -113,19 +115,25 @@ func (h *ShadowService) addUser(pid peer.ID){
 // 		It informs the remote peer that "Here is a shadow peer."
 // 		Avoid to call it multi time for the same peer!!
 func (h *ShadowService) PeerConnected(pid peer.ID, multiaddr ma.Multiaddr) {
-    err := h.inform(pid); if err != nil {
-    	fmt.Printf("Error occurs when inform peer %s\n%s\n", pid.Pretty(), err.Error())
-    }
+	// check whitelist
+	exist := h.whiteList.Check(pid.Pretty())
+	if exist {
+		fmt.Printf("A peer within whitelist connected. Try to send inform to %s\n", pid.Pretty())
+		err := h.inform(pid); if err != nil {
+			fmt.Printf("Error occurs when inform peer %s\n%s\n", pid.Pretty(), err.Error())
+		}
+	}
     //return nil
 }
 
 // TODO: inform pid about my information (e.g., public key), could use ``contact'' directly
 func (h *ShadowService) inform(pid peer.ID) error {
 	fmt.Printf("Shadow: Send inform to %s", pid.Pretty())
+
 	inform := &pb.ShadowInform{}
 	inform.PublicKey = h.address
 	env, err := h.service.NewEnvelope(pb.Message_SHADOW_INFORM, inform, nil, true); if err != nil {return err}
-	err = h.service.SendMessage(nil, pid.Pretty(), env)
+	err = h.service.SendMessage(nil, pid.Pretty(), env); if err != nil {return err}
 
     return nil
 }

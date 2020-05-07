@@ -39,8 +39,10 @@ type StreamMetaStore interface {
 	List() *pb.StreamMetaList
 }
 
-type WhitrListStore interface {
+type WhiteListStore interface {
 	Add(peerId string) error
 	Remove(peerId string) error
+	Check(peerId string) bool
+	PrintOut()
 }
 

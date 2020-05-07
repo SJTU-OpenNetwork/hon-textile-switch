@@ -175,7 +175,8 @@ func (t *Textile) Start() error {
         t.datastore,
         t.shadowMsgRecv,
         t.Host().ID().Pretty(),
-        sk)
+        sk,
+        t.whiteList)
 
     t.cafe = NewCafeService(
         t.Host,
@@ -317,3 +318,14 @@ func (t *Textile)tryExtractPublicKey() {
 
 }
 
+func (t *Textile) AddWhiteList(peerId string) error {
+	return t.whiteList.Add(peerId)
+}
+
+func (t* Textile) RemoveWhiteList(peerId string) error {
+	return t.whiteList.Remove(peerId)
+}
+
+func (t* Textile) PrintWhiteList() {
+	t.whiteList.PrintOut()
+}

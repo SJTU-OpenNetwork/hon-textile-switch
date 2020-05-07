@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 const writeRetry = 3	// Time to retry when write whitelist file failed.
@@ -20,14 +21,18 @@ func (e *ErrFetchLockFail) Error() string {
 }
 
 // WhiteList contains infos about peers served by this shadow peer.
-// It was stored by text file.
+// It was stored by text file and cached by a string map.
 // A Flock would be applied to the directory contains whitelist.
+// How whitelist work:
+//		- Load from text file to cache when start peer
+//		- Read from cache when judge whether a peer is in white list
+//		- Write to cache and further write back to text file when write white list
 type WhiteList struct {
 	flock *util.Flock	// File lock for r/w whitelist file
-	//clock *sync.Mutex	// cache lock for r/w cache
+	clock *sync.Mutex	// cache lock for r/w cache
 	dirPath string
 	filePath string
-	//cache map[string]interface{}
+	cache map[string]interface{}
 }
 
 
@@ -40,6 +45,11 @@ func NewWhiteListStore(dirPath string) (*WhiteList, error) {
 	}
 	filePath := path.Join(dirPath, "whitelist")
 	_, err = os.Stat(filePath)
+	var res = &WhiteList{
+		dirPath:	dirPath,
+		filePath:	filePath,
+		cache:		make(map[string]interface{}),
+	}
 	if os.IsNotExist(err) {
 		// Create empty whitelist file
 		f, err := os.Create(filePath)
@@ -51,22 +61,37 @@ func NewWhiteListStore(dirPath string) (*WhiteList, error) {
 	} else if err != nil {
 		fmt.Printf("Error occur when read white list file info\n")
 		return nil, err
+	} else {
+		// White list already exists
+		fmt.Printf("White list %s exists\nLoad white list to cache\n", filePath)
+		reloadList, err := res.readWhiteList()
+		if err != nil {
+			fmt.Printf("Error occur when reload white list from %s\n", filePath)
+		} else {
+			res.cache = reloadList
+		}
 	}
 	fileLock, err := util.NewFlock(dirPath)
 	if err != nil {
 		fmt.Printf("Error occur when create file lock for whitelist\n")
 		return nil, err
 	}
-	return &WhiteList{
-		flock:    fileLock,
-		dirPath:  dirPath,
-		filePath: filePath,
-	}, nil
+	res.flock = fileLock
+	return res, nil
+}
+
+func (w *WhiteList) Check(peerId string) bool {
+	w.clock.Lock()
+	defer w.clock.Unlock()
+	_, ok := w.cache[peerId]
+	return ok
 }
 
 func (w *WhiteList) Add(peerId string) error {
 	ok := w.flock.Lock()
+
 	defer func() {
+		w.clock.Unlock()
 		err := w.flock.Unlock()
 		if err != nil {
 			fmt.Printf("Error occur when unlock whitelist dir:\n %s\n", err.Error())
@@ -79,13 +104,18 @@ func (w *WhiteList) Add(peerId string) error {
 	}
 
 	// Do Add
-    err := w.writeWhiteList(peerId)
-    if err != nil {
-        return err
-    }
-
-    // Send inform
-
+	_, exists := w.cache[peerId]
+	if exists {
+		fmt.Printf("Add a already existing peer to whitelist: %s\n", peerId)
+		return nil
+	}
+	w.clock.Lock()
+	w.cache[peerId] = struct{}{}
+	err := w.writebackWhiteList(peerId)
+	if err != nil {
+		fmt.Printf("Error occurs when write peer %s back to whitelist text file.\n%s\n", err)
+		// Do not raise this error out of this function
+	}
 	return nil
 }
 
@@ -104,30 +134,12 @@ func (w *WhiteList) Remove(peerId string) error {
 	}
 
 	// Do Remove
-    list, err := w.readWhiteList()
-    if err != nil {
-        return err
-    }
-    _, ok = list[peerId]
-    if !ok {
-        return nil
-    }
-
-    delete(list, peerId)
-    f, err := os.OpenFile(w.filePath, os.O_WRONLY|os.O_TRUNC, 0644)
+	delete(w.cache, peerId)
+	err := w.rewriteWhiteList()
 	if err != nil {
-		fmt.Printf("Error occur when open whitelist file for write\n")
-		return err
+		fmt.Printf("Error occurs when rewrite white list file\n%s\n", err)
+		return nil
 	}
-	defer f.Close()
-
-    for peerId, _ := range (list) {
-		_, err = f.WriteString(peerId + "\n")
-		if err != nil {
-			fmt.Printf("Error occur when write peerId to whitelist file\n")
-			return err
-		}
-    }
 	return nil
 }
 
@@ -149,14 +161,14 @@ func (w *WhiteList) readWhiteList() (map[string]interface{}, error){
 	return res, nil
 }
 
-func (w *WhiteList) writeWhiteList(peerId string) error{
+func (w *WhiteList) writebackWhiteList(peerId string) error{
 	// Open file writeonly
 	f, err := os.OpenFile(w.filePath, os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Printf("Error occur when open whitelist file for write\n")
 		return err
 	} else {
-		_, err = f.WriteString(peerId + "\n")
+		_, err = f.WriteString(peerId+"\n")
 		if err != nil {
 			fmt.Printf("Error occur when write peerId to whitelist file\n")
 			return err
@@ -164,4 +176,31 @@ func (w *WhiteList) writeWhiteList(peerId string) error{
 	}
 	defer f.Close()
 	return nil
+}
+
+func (w *WhiteList) rewriteWhiteList() error {
+	f, err := os.Create(w.filePath)
+	if err != nil {
+		fmt.Printf("Error occur when flush whitelist file %s\n", err)
+		return err
+	}
+	for peerId, _ := range w.cache {
+		_, err = f.WriteString(peerId + "\n")
+		if err != nil {
+			fmt.Printf("Error occur when rewrite %s to whitelist file\n", peerId)
+			return err
+		}
+	}
+
+	defer f.Close()
+	return nil
+}
+
+func (w *WhiteList) PrintOut() {
+	w.clock.Lock()
+	defer w.clock.Unlock()
+	fmt.Printf("Peers in whitelist:\n")
+	for peerId, _ := range w.cache{
+		fmt.Printf("\t%s\n", peerId)
+	}
 }
