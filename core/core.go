@@ -46,6 +46,7 @@ type Textile struct {
 	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
 	//lock              sync.Mutex
     stream            *stream.StreamService
+    cafe              *CafeService
 	whiteList         repo.WhitrListStore
 }
 
@@ -175,6 +176,13 @@ func (t *Textile) Start() error {
         t.shadowMsgRecv,
         t.Host().ID().Pretty(),
         sk)
+
+    t.cafe = NewCafeService(
+        t.Host,
+        t.ctx,
+        t.datastore,
+        t.stream,
+        sk)
 /*
 	go func() {
 		defer func() {
@@ -189,6 +197,7 @@ func (t *Textile) Start() error {
 */
  	t.stream.Start()
  	t.shadow.Start()
+ 	t.cafe.Start()
 
  	// Outprint peer info
  	fmt.Printf("Host start with:\n")

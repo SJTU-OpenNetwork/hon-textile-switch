@@ -9,7 +9,7 @@ import (
 	"github.com/golang/protobuf/ptypes/any"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	protocol "github.com/libp2p/go-libp2p-core/protocol"
-    //pubsub "github.com/libp2p/go-libp2p-pubsub"
+    pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
@@ -49,6 +49,7 @@ type CafeService struct {
 // NewCafeService returns a new threads service
 func NewCafeService(
 	node func() host.Host,
+    ctx context.Context,
 	datastore repo.Datastore,
     stream  *stream.StreamService,
 	sk crypto.PrivKey) *CafeService {
@@ -58,6 +59,16 @@ func NewCafeService(
         stream:          stream,
 	}
 	handler.service = service.NewService(handler, node,sk)
+
+    //subscribe topic
+    ps, err := pubsub.NewGossipSub(ctx, handler.service.Node())
+	if err != nil {
+		fmt.Printf("error init pubsub")
+	}
+	_, err = ps.Subscribe(string(cafeServiceProtocol))
+	if err != nil {
+		fmt.Printf("error subscribetopic")
+	}
 	return handler
 }
 
@@ -70,7 +81,6 @@ func (h *CafeService) Protocol() protocol.ID {
 func (h *CafeService) Start() {
 	h.service.Start()
 
-    //TODO: subscribe topic
 }
 
 // Handle is called by the underlying service handler method

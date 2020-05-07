@@ -122,6 +122,24 @@ func Run() error {
 			return err
 		}
 
+    case "whitelist":
+		if numArgs <= 2 {
+			fmt.Printf("Not enough parameter\n")
+			return nil
+		}
+		if os.Args[2] == "help" {
+			fmt.Printf("whiltelist [add|remove] <id>")
+			return nil
+		} else if numArgs <= 3 {
+			fmt.Printf("Not enough parameter\n")
+			return nil
+		}
+
+		err = SendCmd(strcmd)
+		if err != nil {
+			fmt.Printf("Error occurs when send json command to api server\n%s\n", err.Error())
+			return err
+		}
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
 	}

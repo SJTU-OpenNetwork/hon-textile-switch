@@ -79,7 +79,12 @@ func (w *WhiteList) Add(peerId string) error {
 	}
 
 	// Do Add
+    err := w.writeWhiteList(peerId)
+    if err != nil {
+        return err
+    }
 
+    // Send inform
 
 	return nil
 }
@@ -99,6 +104,30 @@ func (w *WhiteList) Remove(peerId string) error {
 	}
 
 	// Do Remove
+    list, err := w.readWhiteList()
+    if err != nil {
+        return err
+    }
+    _, ok = list[peerId]
+    if !ok {
+        return nil
+    }
+
+    delete(list, peerId)
+    f, err := os.OpenFile(w.filePath, os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		fmt.Printf("Error occur when open whitelist file for write\n")
+		return err
+	}
+	defer f.Close()
+
+    for peerId, _ := range (list) {
+		_, err = f.WriteString(peerId + "\n")
+		if err != nil {
+			fmt.Printf("Error occur when write peerId to whitelist file\n")
+			return err
+		}
+    }
 	return nil
 }
 
@@ -127,7 +156,7 @@ func (w *WhiteList) writeWhiteList(peerId string) error{
 		fmt.Printf("Error occur when open whitelist file for write\n")
 		return err
 	} else {
-		_, err = f.WriteString(peerId)
+		_, err = f.WriteString(peerId + "\n")
 		if err != nil {
 			fmt.Printf("Error occur when write peerId to whitelist file\n")
 			return err
