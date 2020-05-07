@@ -238,7 +238,7 @@ func (srv *Service) NewEnvelope(mtype pb.Message_Type, msg proto.Message, id *in
 		return nil, err
 	}
 
-	sig, err := srv.Node().PrivateKey.Sign(ser)
+	sig, err := srv.privateKey.Sign(ser)
 	if err != nil {
 		return nil, err
 	}
