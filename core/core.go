@@ -198,6 +198,8 @@ func (t *Textile) Start() error {
  		fmt.Printf("%s\n", addr.String())
 	}
 
+ 	t.tryExtractPublicKey()
+
     return nil
 }
 
@@ -265,5 +267,44 @@ func (t *Textile)Connect(peerId string, addr string) error {
 	}
 	fmt.Printf("Connect command end\n")
 	return nil
+}
+
+func (t *Textile)tryExtractPublicKey() {
+	fmt.Printf("Try extract public key from peer Id %s\n", t.node.ID().Pretty())
+	_, err := t.node.ID().ExtractPublicKey()
+	if err != nil {
+		fmt.Printf("Error occur when extract public key from %s\n%s\n", t.node.ID().Pretty(), err)
+	} else {
+		fmt.Printf("Extract pubkey from peerId seccessfully\n")
+	}
+
+	pubk, err := crypto.UnmarshalPublicKey(t.config.Pubkey)
+	if err != nil {
+		fmt.Printf("Error occur when unmarshal public key\n", err)
+	}
+
+	fmt.Printf("Try extract peer Id frim public key")
+	id, err := peer.IDFromPublicKey(pubk)
+	if err != nil {
+		fmt.Printf("Error occur when extract id from public key\n", err)
+	} else {
+		fmt.Printf("Extract peerId from public key seccessfully. Id: %s\n", id.Pretty())
+	}
+
+	privk, err := crypto.UnmarshalPrivateKey(t.config.PrivKey)
+	if err != nil {
+		fmt.Printf("Error occur when unmarshal private key\n", err)
+	}
+
+	fmt.Printf("Try extract peer Id frim private key \n")
+	id2, err := peer.IDFromPrivateKey(privk)
+	if err != nil {
+		fmt.Printf("Error occur when extract id from private key\n", err)
+	} else {
+		fmt.Printf("Extract peerId from private key seccessfully. Id: %s\n", id2.Pretty())
+	}
+
+	//fmt.Printf("Try extract Id from public key %s\n", t.node.ID().Pretty())
+
 }
 
