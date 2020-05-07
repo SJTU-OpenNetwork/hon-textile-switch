@@ -71,9 +71,16 @@ func (h *ShadowService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, err
 		return h.handleStreamMeta(env, pid)
 	case pb.Message_SHADOW_INFORM_RES:
 		return h.handleInformRes(env, pid)
+	case pb.Message_SHADOW_INFORM:
+		return h.handleInform(env, pid)
     default:
         return nil, nil
     }
+}
+
+func (h *ShadowService) handleInform(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error) {
+	fmt.Printf("Inform message from %s\n", pid.Pretty())
+	return nil, nil
 }
 
 // TODO: if the shadow node is disconnected, modify the work mode
@@ -109,7 +116,7 @@ func (h *ShadowService) PeerConnected(pid peer.ID, multiaddr ma.Multiaddr) error
 
 // TODO: inform pid about my information (e.g., public key), could use ``contact'' directly
 func (h *ShadowService) inform(pid peer.ID) error {
-	//log.Debugf("Shadow: Send inform to %s", pid.Pretty())
+	fmt.Printf("Shadow: Send inform to %s", pid.Pretty())
 	inform := &pb.ShadowInform{}
 	inform.PublicKey = h.address
 	env, err := h.service.NewEnvelope(pb.Message_SHADOW_INFORM, inform, nil, true); if err != nil {return err}

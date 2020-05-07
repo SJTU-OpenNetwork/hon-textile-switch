@@ -251,6 +251,8 @@ func (t *Textile)Connect(peerId string, addr string) error {
 	if err != nil {
 		fmt.Printf("Error occur when connect %s:%s\n", peerId, addr)
 		return err
+	} else {
+		fmt.Printf("Connect %s successful\n", peerId)
 	}
 	return nil
 }
