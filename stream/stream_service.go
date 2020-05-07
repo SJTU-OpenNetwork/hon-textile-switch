@@ -17,6 +17,7 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/crypto"
 )
 
 
@@ -50,6 +51,7 @@ func NewStreamService(
     repoPath  string,
     subscribe func(string) error,
 	ctx context.Context,
+	key crypto.PrivKey,
 ) *StreamService {
 	handler := &StreamService{
 		datastore:        datastore,
@@ -59,7 +61,7 @@ func NewStreamService(
 		activeWorkers: newWorkerStore(),
         providers: newProviderStore(),
 	}
-	handler.service = service.NewService(handler, node)
+	handler.service = service.NewService(handler, node, key)
 	return handler
 }
 

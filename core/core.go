@@ -167,7 +167,7 @@ func (t *Textile) Start() error {
 		t.repoPath,
 		t.SubscribeStream,
 		t.ctx,
-		)
+		sk)
 
 	t.shadow = shadow.NewShadowService(
         t.Host,
