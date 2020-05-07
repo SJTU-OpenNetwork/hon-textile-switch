@@ -72,6 +72,8 @@ func (s *Server) handleMessage(conn net.Conn) {
 		switch cmd_formatted.Type {
 		case "connect":
 			err = s.api_connect(cmd_formatted.Args)
+		case "whitelist":
+			err = s.api_whitelist(cmd_formatted.Args)
 		default:
 			err = fmt.Errorf("Unknown cmd: %s", cmd_formatted.Type)
 		}

@@ -121,7 +121,12 @@ func Run() error {
 			fmt.Printf("Error occurs when send json command to api server\n%s\n", err.Error())
 			return err
 		}
-
+	case "whitelist":
+		err = SendCmd(strcmd)
+		if err != nil {
+			fmt.Printf("Error occurs when send json command to api server\n%s\n", err.Error())
+			return err
+		}
 	default:
 		fmt.Printf("Unknown command %s\n", os.Args[1])
 	}

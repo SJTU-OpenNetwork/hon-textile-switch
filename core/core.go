@@ -46,7 +46,7 @@ type Textile struct {
 	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
 	//lock              sync.Mutex
     stream            *stream.StreamService
-	whiteList         repo.WhitrListStore
+	whiteList         repo.WhiteListStore
 }
 
 // common errors
@@ -174,7 +174,8 @@ func (t *Textile) Start() error {
         t.datastore,
         t.shadowMsgRecv,
         t.Host().ID().Pretty(),
-        sk)
+        sk,
+        t.whiteList)
 /*
 	go func() {
 		defer func() {
@@ -308,3 +309,14 @@ func (t *Textile)tryExtractPublicKey() {
 
 }
 
+func (t *Textile) AddWhiteList(peerId string) error {
+	return t.whiteList.Add(peerId)
+}
+
+func (t* Textile) RemoveWhiteList(peerId string) error {
+	return t.whiteList.Remove(peerId)
+}
+
+func (t* Textile) PrintWhiteList() {
+	t.whiteList.PrintOut()
+}
