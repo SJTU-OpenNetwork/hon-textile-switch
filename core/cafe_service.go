@@ -15,6 +15,7 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
+	"github.com/libp2p/go-libp2p-core/crypto"
 )
 
 // maxQueryWaitSeconds is used to limit a query request's max wait time
@@ -49,13 +50,14 @@ type CafeService struct {
 func NewCafeService(
 	node func() host.Host,
 	datastore repo.Datastore,
-    stream  *stream.StreamService) *CafeService {
+    stream  *stream.StreamService,
+	sk crypto.PrivKey) *CafeService {
 	handler := &CafeService{
 		datastore:       datastore,
 		inFlightQueries: make(map[string]struct{}),
         stream:          stream,
 	}
-	handler.service = service.NewService(handler, node)
+	handler.service = service.NewService(handler, node,sk)
 	return handler
 }
 
