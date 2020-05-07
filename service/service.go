@@ -394,7 +394,7 @@ func (srv *Service) handleNewMessage(s inet.Stream) bool {
 		//log.Debugf("received %s from %s", req.Message.Type.String(), mPeer.Pretty())
 		rpmes, err := handler(&req, mPeer)
 		if err != nil {
-			//log.Warningf("error handling message %s: %s", req.Message.Type.String(), err)
+			fmt.Printf("error handling message %s: %s\n", req.Message.Type.String(), err)
 			return false
 		}
 
