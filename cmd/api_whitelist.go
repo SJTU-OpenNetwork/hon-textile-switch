@@ -10,6 +10,9 @@ func (s *Server)api_whitelist(params []string) error {
 	if params == nil {
 		return errors.New("Nil params when call api_whitelist\n")
 	}
+	if s.node == nil {
+		return errors.New("Nil textile node when call api_whitelist\n")
+	}
 	if len(params) < 1 || (len(params)<2 && params[0] != "list") {
 		return errors.New("Not enough parameter")
 	}
