@@ -208,7 +208,7 @@ func (t *Textile) Start() error {
  		fmt.Printf("%s\n", addr.String())
 	}
 
- 	t.tryExtractPublicKey()
+ 	//t.tryExtractPublicKey()
 
     return nil
 }

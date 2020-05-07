@@ -200,6 +200,10 @@ func (w *WhiteList) PrintOut() {
 	w.clock.Lock()
 	defer w.clock.Unlock()
 	fmt.Printf("Peers in whitelist:\n")
+	if w.cache == nil {
+		fmt.Printf("Nil white list cache\n")
+		return
+	}
 	for peerId, _ := range w.cache{
 		fmt.Printf("\t%s\n", peerId)
 	}
