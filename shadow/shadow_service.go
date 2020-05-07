@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
+	"github.com/libp2p/go-libp2p-core/crypto"
 )
 
 
@@ -41,13 +42,15 @@ func NewShadowService(
 	datastore repo.Datastore,
 	msgRecv func(*pb.Envelope, peer.ID) error,
 	address string,
+	key crypto.PrivKey,
 ) *ShadowService {
 	handler := &ShadowService{
 		datastore:        datastore,
 		msgRecv:          msgRecv,
 		address:		  address,
+
 	}
-	handler.service = service.NewService(handler, node)
+	handler.service = service.NewService(handler, node, key)
 	return handler
 }
 

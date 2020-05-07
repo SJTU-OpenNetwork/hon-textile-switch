@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	ma "github.com/multiformats/go-multiaddr"
+	"github.com/libp2p/go-libp2p-core/crypto"
 
 	//"strings"
 	//"sync"
@@ -154,6 +155,12 @@ func (t *Textile) Start() error {
 	}
 
 	// create services
+	sk, err := crypto.UnmarshalPrivateKey(t.config.PrivKey)
+	if err != nil {
+		fmt.Printf("Error occurs when unmarshal private key\n%s\n", err)
+		return err
+	}
+
 	t.stream = stream.NewStreamService(
 		t.Host,
 		t.datastore,
@@ -161,11 +168,13 @@ func (t *Textile) Start() error {
 		t.SubscribeStream,
 		t.ctx,
 		)
+
 	t.shadow = shadow.NewShadowService(
         t.Host,
         t.datastore,
         t.shadowMsgRecv,
-        t.Host().ID().Pretty())
+        t.Host().ID().Pretty(),
+        sk)
 /*
 	go func() {
 		defer func() {

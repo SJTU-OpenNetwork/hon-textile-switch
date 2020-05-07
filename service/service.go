@@ -22,6 +22,8 @@ import (
 	"github.com/libp2p/go-msgio"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/crypto"
+	libp2pcrypto "github.com/libp2p/go-libp2p-core/crypto"
 )
 
 // service represents a libp2p service
@@ -30,6 +32,7 @@ type Service struct {
 	handler Handler
 	strmap map[peer.ID]*messageSender
 	smlk   sync.Mutex
+	privateKey libp2pcrypto.PrivKey
 }
 
 // DefaultTimeout is the context timeout for sending / requesting messages
@@ -52,11 +55,12 @@ type Handler interface {
 }
 
 // NewService returns a service for the given config
-func NewService(handler Handler, node func() host.Host) *Service {
+func NewService(handler Handler, node func() host.Host, privKey libp2pcrypto.PrivKey) *Service {
 	return &Service{
 		Node:    node,
 		handler: handler,
 		strmap:  make(map[peer.ID]*messageSender),
+		privateKey:privKey,
 	}
 }
 
@@ -228,18 +232,18 @@ func (srv *Service) NewEnvelope(mtype pb.Message_Type, msg proto.Message, id *in
 		message.Response = true
 	}
 
-	//ser, err := proto.Marshal(message)
-	_, err := proto.Marshal(message)
+	ser, err := proto.Marshal(message)
+	//_, err := proto.Marshal(message)
 	if err != nil {
 		return nil, err
 	}
 
-	//sig, err := srv.Node().PrivateKey.Sign(ser)
-	//if err != nil {
-	//	return nil, err
-	//}
+	sig, err := srv.Node().PrivateKey.Sign(ser)
+	if err != nil {
+		return nil, err
+	}
 
-	return &pb.Envelope{Message: message}, nil
+	return &pb.Envelope{Message: message, Sig: sig}, nil
 }
 
 // NewError returns a signed pb error message
@@ -251,19 +255,19 @@ func (srv *Service) NewError(code int, msg string, id int32) (*pb.Envelope, erro
 }
 
 // VerifyEnvelope verifies the authenticity of an envelope
-//func (srv *Service) VerifyEnvelope(env *pb.Envelope, pid peer.ID) error {
-//	ser, err := proto.Marshal(env.Message)
-//	if err != nil {
-//		return err
-//	}
-//
-//	pk, err := pid.ExtractPublicKey()
-//	if err != nil {
-//		return err
-//	}
-//
-//	return crypto.Verify(pk, ser, env.Sig)
-//}
+func (srv *Service) VerifyEnvelope(env *pb.Envelope, pid peer.ID) error {
+	ser, err := proto.Marshal(env.Message)
+	if err != nil {
+		return err
+	}
+
+	pk, err := pid.ExtractPublicKey()
+	if err != nil {
+		return err
+	}
+
+	return crypto.Verify(pk, ser, env.Sig)
+}
 
 // handleError receives an error response
 func (srv *Service) handleError(env *pb.Envelope) error {
@@ -379,10 +383,11 @@ func (srv *Service) handleNewMessage(s inet.Stream) bool {
 
 		timer.Reset(dhtStreamIdleTimeout)
 
-		//if err := srv.VerifyEnvelope(&req, mPeer); err != nil {
+		if err := srv.VerifyEnvelope(&req, mPeer); err != nil {
 			//log.Warningf("error verifying message: %s", err)
-			//continue
-		//}
+			fmt.Printf("Error when verify message: %s\n", err)
+			continue
+		}
 
         handler := srv.handler.Handle
 
