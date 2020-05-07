@@ -13,11 +13,11 @@ func (sn *ShadowNotifee) manager() *ShadowService {
 }
 
 func (*ShadowNotifee) Listen (net network.Network, addr ma.Multiaddr) {
-	//fmt.Printf("Notifee: Listen address %s\n", addr.String())
+	fmt.Printf("Notifee: Listen address %s\n", addr.String())
 }
 
 func (*ShadowNotifee) ListenClose (net network.Network, addr ma.Multiaddr) {
-	//fmt.Printf("Notifee: Close listen address %s\n", addr.String())
+	fmt.Printf("Notifee: Close listen address %s\n", addr.String())
 }
 
 func (sn *ShadowNotifee) Connected (net network.Network, conn network.Conn) {
@@ -27,7 +27,7 @@ func (sn *ShadowNotifee) Connected (net network.Network, conn network.Conn) {
 }
 
 func (sn *ShadowNotifee) Disconnected(net network.Network, conn network.Conn) {
-	//fmt.Printf("Notifee: Disconnect %s\n", conn.RemotePeer().Pretty())
+	fmt.Printf("Notifee: Disconnect %s\n", conn.RemotePeer().Pretty())
 	//sn.manager().PeerDisconnected(conn.RemotePeer())
 }
 
