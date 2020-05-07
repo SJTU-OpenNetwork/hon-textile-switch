@@ -128,6 +128,7 @@ func (h *ShadowService) inform(pid peer.ID) error {
 }
 
 func (h *ShadowService) handleInformRes(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error){
+	fmt.Printf("Shadow: Get inform response from %s\n", pid.Pretty())
 	res := &pb.ShadowInformResponse{}
 	err := ptypes.UnmarshalAny(env.Message.Payload, res); if err != nil {return nil, err}
 	if res.Accept {
