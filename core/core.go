@@ -254,6 +254,7 @@ func (t *Textile)Connect(peerId string, addr string) error {
 	} else {
 		fmt.Printf("Connect %s successful\n", peerId)
 	}
+	fmt.Printf("Connect command end\n")
 	return nil
 }
 
