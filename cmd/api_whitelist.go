@@ -13,9 +13,9 @@ func (s *Server)api_whitelist(params []string) error {
 	//return s.node.Connect(params[0], params[1])
 	switch params[0] {
 	case "add":
-		return s.node.AddWhiteList(params[1])
+		return s.node.WhitelistAddItem(params[1])
 	case "remove":
-		return s.node.RemoveWhiteList(params[1])
+		return s.node.WhitelistRemoveItem(params[1])
 	case "list":
 		s.node.PrintWhiteList()
 		return nil

@@ -318,14 +318,3 @@ func (t *Textile)tryExtractPublicKey() {
 
 }
 
-func (t *Textile) AddWhiteList(peerId string) error {
-	return t.whiteList.Add(peerId)
-}
-
-func (t* Textile) RemoveWhiteList(peerId string) error {
-	return t.whiteList.Remove(peerId)
-}
-
-func (t* Textile) PrintWhiteList() {
-	t.whiteList.PrintOut()
-}
