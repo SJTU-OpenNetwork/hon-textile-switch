@@ -47,7 +47,7 @@ type Textile struct {
 	//lock              sync.Mutex
     stream            *stream.StreamService
     cafe              *CafeService
-	whiteList         repo.WhitrListStore
+	whiteList         repo.WhiteListStore
 }
 
 // common errors
