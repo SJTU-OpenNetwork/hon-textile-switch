@@ -127,7 +127,7 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
             Description: string(blk.Description),
         }
         //fmt.Printf("StreamService: Received stream %s; index %d; cid %s\n", blk.StreamID, blk.Index, cid.String())
-        //log.Debugf("[%s] Block %s, Stream %s, Index %d, From %s, Size %d", TAG_BLOCKRECEIVE, cid_str, blk.StreamID, blk.Index, pid.Pretty(), size)
+        fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, From %s, Size %d", model.Id, blk.StreamID, blk.Index, pid.Pretty(), size)
         err = h.datastore.StreamBlocks().Add(model)
         if err != nil {
             return nil, err
