@@ -29,7 +29,7 @@ func (e *ErrFetchLockFail) Error() string {
 //		- Write to cache and further write back to text file when write white list
 type WhiteList struct {
 	flock *util.Flock	// File lock for r/w whitelist file
-	clock *sync.Mutex	// cache lock for r/w cache
+	clock sync.Mutex	// cache lock for r/w cache
 	dirPath string
 	filePath string
 	cache map[string]interface{}
