@@ -7,6 +7,9 @@ import (
 
 // api_connect define how the api server handle "connect" command
 func (s *Server)api_whitelist(params []string) error {
+	if params == nil {
+		return errors.New("Nil params when call api_whitelist\n")
+	}
 	if len(params) < 1 || (len(params)<2 && params[0] != "list") {
 		return errors.New("Not enough parameter")
 	}
