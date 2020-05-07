@@ -109,9 +109,11 @@ func (h *ShadowService) addUser(pid peer.ID){
 // TODO: automatically connect to the shadow node
 // 		It informs the remote peer that "Here is a shadow peer."
 // 		Avoid to call it multi time for the same peer!!
-func (h *ShadowService) PeerConnected(pid peer.ID, multiaddr ma.Multiaddr) error{
-    err := h.inform(pid); if err != nil {return err}
-    return nil
+func (h *ShadowService) PeerConnected(pid peer.ID, multiaddr ma.Multiaddr) {
+    err := h.inform(pid); if err != nil {
+    	fmt.Printf("Error occurs when inform peer %s\n%s\n", pid.Pretty(), err.Error())
+    }
+    //return nil
 }
 
 // TODO: inform pid about my information (e.g., public key), could use ``contact'' directly

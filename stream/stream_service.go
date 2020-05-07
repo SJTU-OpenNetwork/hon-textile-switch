@@ -72,7 +72,7 @@ func (h *StreamService) Protocol() protocol.ID {
 func (h *StreamService) Start() {
     h.online = true
 	h.service.Start()
-	h.service.Node().Network().Notify((*StreamNotifee)(h))
+	//h.service.Node().Network().Notify((*StreamNotifee)(h))
 }
 
 
