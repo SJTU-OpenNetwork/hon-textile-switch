@@ -22,7 +22,8 @@ type Config struct {
 // Init returns the default textile config
 func Init() (*Config, error) {
 	r:= rand.Reader
-	privK, pubK, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, r)
+	privK, pubK, err := crypto.GenerateKeyPairWithReader(crypto.Ed25519, 2048, r)
+	//privK, pubK, err :=
 	if err != nil {
 		fmt.Printf("Error occur when generate key pair\n%s\n", err.Error())
 		return nil, err

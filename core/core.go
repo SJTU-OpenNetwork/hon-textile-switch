@@ -283,7 +283,7 @@ func (t *Textile)tryExtractPublicKey() {
 		fmt.Printf("Error occur when unmarshal public key\n", err)
 	}
 
-	fmt.Printf("Try extract peer Id frim public key")
+	fmt.Printf("Try extract peer Id frim public key\n")
 	id, err := peer.IDFromPublicKey(pubk)
 	if err != nil {
 		fmt.Printf("Error occur when extract id from public key\n", err)
