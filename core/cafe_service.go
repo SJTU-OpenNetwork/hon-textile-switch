@@ -65,11 +65,37 @@ func NewCafeService(
 	if err != nil {
 		fmt.Printf("error init pubsub")
 	}
-	_, err = ps.Subscribe(string(cafeServiceProtocol))
+	sub, err = ps.Subscribe(string(cafeServiceProtocol))
 	if err != nil {
 		fmt.Printf("error subscribetopic")
 	}
+    go h.pubsubHandler(ctx, sub)
 	return handler
+}
+
+func (h *CafeService) pubsubHandler(ctx context.Context, sub *pubsub.Subscription) {
+	for {
+		msg, err := sub.Next(ctx)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			continue
+		}
+
+		mPeer := msg.From()
+		if mPeer.Pretty() == srv.Node().Identity.Pretty() { // if the msg is from itself, just pass it
+			continue
+		}
+
+		req := new(pb.Envelope)
+		err := proto.Unmarshal(msg.Data(), req)
+		if err != nil {
+			log.Warningf("error unmarshaling pubsub message data from %s: %s", mPeer.Pretty(), err)
+			continue
+		}
+
+		switch *req.Type {
+		}
+	}
 }
 
 // Protocol returns the handler protocol
