@@ -233,7 +233,7 @@ type mdnsNotifee struct {
 func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	err := m.h.Connect(m.ctx, pi)
 	if err != nil {
-		fmt.Printf("error occur when connect mdns peer\nerr\n")
+		//fmt.Printf("error occur when connect mdns peer\nerr\n")
 	} else {
 		fmt.Printf("connect mdns peer %s\n", pi.ID.Pretty())
 	}
