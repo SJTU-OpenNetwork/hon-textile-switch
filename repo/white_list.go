@@ -89,7 +89,7 @@ func (w *WhiteList) Check(peerId string) bool {
 
 func (w *WhiteList) Add(peerId string) error {
 	ok := w.flock.Lock()
-
+	w.clock.Lock()
 	defer func() {
 		w.clock.Unlock()
 		err := w.flock.Unlock()
@@ -104,12 +104,12 @@ func (w *WhiteList) Add(peerId string) error {
 	}
 
 	// Do Add
+
 	_, exists := w.cache[peerId]
 	if exists {
 		fmt.Printf("Add a already existing peer to whitelist: %s\n", peerId)
 		return nil
 	}
-	w.clock.Lock()
 	w.cache[peerId] = struct{}{}
 	err := w.writebackWhiteList(peerId)
 	if err != nil {
