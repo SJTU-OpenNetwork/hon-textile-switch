@@ -318,3 +318,20 @@ func (t *Textile)tryExtractPublicKey() {
 
 }
 
+func (t* Textile) WritePeerInfo() {
+	infopath := path.Join(t.repoPath, "address")
+	f, err := os.Create(infopath)
+	if err != nil {
+		fmt.Printf("Error occur when write info file\n%s\n", err)
+		return
+	}
+	peerId := t.node.ID()
+	for _, addr := range t.node.Addrs() {
+		_, err = f.WriteString(addr.String()+"/ipfs/"+peerId.Pretty())
+		if err != nil {
+			fmt.Printf("Error occur when write info file\n")
+		}
+	}
+
+	defer f.Close()
+}
