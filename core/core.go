@@ -348,7 +348,7 @@ func (t* Textile) WritePeerInfo() {
 	}
 	peerId := t.node.ID()
 	for _, addr := range t.node.Addrs() {
-		_, err = f.WriteString(addr.String()+"/ipfs/"+peerId.Pretty())
+		_, err = f.WriteString(addr.String()+"/ipfs/"+peerId.Pretty()+"\n")
 		if err != nil {
 			fmt.Printf("Error occur when write info file\n")
 		}
