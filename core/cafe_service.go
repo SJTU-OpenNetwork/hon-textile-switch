@@ -153,9 +153,11 @@ func (h *CafeService) searchLocal(qtype pb.Query_Type, options *pb.QueryOptions,
 		}
 
         meta := h.datastore.StreamMetas().Get(q.Id)
-        if meta == nil{ 
+        if meta == nil{
+			fmt.Printf("Searchlocal: No stream meta of %s\n", q.Id)
             break
         }
+		fmt.Printf("Searchlocal: Get stream meta of %s\n", q.Id)
 
 		blocks := h.datastore.StreamBlocks().ListByStream(q.Id, int(q.Startindex),3)
         if q.Startindex != 0 && len(blocks) == 0 {
@@ -264,6 +266,7 @@ func (h *CafeService) searchLocal(qtype pb.Query_Type, options *pb.QueryOptions,
 
 // handlePubSubQuery receives a query request over pubsub and responds with a direct message
 func (h *CafeService) handlePubSubQuery(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error) {
+	fmt.Printf("Handling pubsub query from %s\n", pid.Pretty())
 	query := new(pb.PubSubQuery)
 	err := ptypes.UnmarshalAny(env.Message.Payload, query)
 	if err != nil {
