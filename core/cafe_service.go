@@ -3,19 +3,18 @@ package core
 import (
 	"context"
 	"fmt"
-
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
-	peer "github.com/libp2p/go-libp2p-core/peer"
-	protocol "github.com/libp2p/go-libp2p-core/protocol"
-    pubsub "github.com/libp2p/go-libp2p-pubsub"
-	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/any"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/protocol"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 // maxQueryWaitSeconds is used to limit a query request's max wait time
@@ -44,6 +43,7 @@ type CafeService struct {
 	datastore       repo.Datastore
 	inFlightQueries map[string]struct{}
     stream          *stream.StreamService
+	//sub 			*pubsub.Subscription
 }
 
 // NewCafeService returns a new threads service
@@ -63,13 +63,13 @@ func NewCafeService(
     //subscribe topic
     ps, err := pubsub.NewGossipSub(ctx, handler.service.Node())
 	if err != nil {
-		fmt.Printf("error init pubsub")
+		fmt.Printf("error init pubsub\n")
 	}
-	sub, err = ps.Subscribe(string(cafeServiceProtocol))
+	sub, err := ps.Subscribe(string(cafeServiceProtocol))
 	if err != nil {
-		fmt.Printf("error subscribetopic")
+		fmt.Printf("error subscribetopic\n")
 	}
-    go h.pubsubHandler(ctx, sub)
+    go handler.pubsubHandler(ctx, sub)
 	return handler
 }
 
@@ -77,23 +77,31 @@ func (h *CafeService) pubsubHandler(ctx context.Context, sub *pubsub.Subscriptio
 	for {
 		msg, err := sub.Next(ctx)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Printf("Error occur when get pubsub")
 			continue
 		}
 
-		mPeer := msg.From()
-		if mPeer.Pretty() == srv.Node().Identity.Pretty() { // if the msg is from itself, just pass it
+		//mPeerByte := msg.From
+		mPeer := msg.GetFrom()
+		if err != nil {
+			fmt.Printf("Error occur when build peerid from pubsub msg\n")
+			continue
+		}
+		if mPeer.Pretty() == h.service.Node().ID().Pretty() { // if the msg is from itself, just pass it
 			continue
 		}
 
 		req := new(pb.Envelope)
-		err := proto.Unmarshal(msg.Data(), req)
+		err = proto.Unmarshal(msg.Data, req)
 		if err != nil {
-			log.Warningf("error unmarshaling pubsub message data from %s: %s", mPeer.Pretty(), err)
+			fmt.Printf("error unmarshaling pubsub message data from %s: %s\n", mPeer.Pretty(), err)
 			continue
 		}
 
-		switch *req.Type {
+		_, err = h.Handle(req, mPeer)
+		if err != nil {
+			fmt.Printf("Error occurs when handle cafe pubsub query\n%s\n",err)
+			continue
 		}
 	}
 }
