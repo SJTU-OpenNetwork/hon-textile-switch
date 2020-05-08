@@ -3,21 +3,18 @@ package core
 import (
 	"context"
 	"fmt"
-    "time"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	p2phost "github.com/libp2p/go-libp2p-core/host"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
 	"github.com/libp2p/go-libp2p-core/peer"
+	ma "github.com/multiformats/go-multiaddr"
 	"os"
 	"path"
-	ma "github.com/multiformats/go-multiaddr"
-	"github.com/libp2p/go-libp2p-core/crypto"
-    "github.com/libp2p/go-libp2p/p2p/discovery"
-
 	//"strings"
 	//"sync"
 )
@@ -201,13 +198,13 @@ func (t *Textile) Start() error {
  	t.stream.Start()
  	t.shadow.Start()
  	t.cafe.Start()
-
+	/*
     mdns, err := discovery.NewMdnsService(t.ctx, t.node, time.Second*10, "")
 	if err != nil {
 		panic(err)
 	}
 	mdns.RegisterNotifee(&mdnsNotifee{h: t.node, ctx: t.ctx})
-
+	*/
  	// Outprint peer info
  	fmt.Printf("Host start with:\n")
  	fmt.Printf("PeerId: %s\n", t.node.ID().Pretty())
@@ -224,7 +221,7 @@ func (t *Textile) Start() error {
 func (t *Textile) Host() p2phost.Host{
 	return t.node
 }
-
+/*
 type mdnsNotifee struct {
 	h   p2phost.Host
 	ctx context.Context
@@ -238,7 +235,7 @@ func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
 		fmt.Printf("connect mdns peer %s\n", pi.ID.Pretty())
 	}
 }
-
+*/
 // touchDatastore ensures that we have a good db connection
 func (t *Textile) touchDatastore() error {
 	if err := t.datastore.Ping(); err != nil {
