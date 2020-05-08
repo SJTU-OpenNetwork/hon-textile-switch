@@ -207,7 +207,7 @@ func (t *Textile) Start() error {
  	for _, addr := range t.node.Addrs(){
  		fmt.Printf("%s\n", addr.String())
 	}
-
+	t.WritePeerInfo()
  	//t.tryExtractPublicKey()
 
     return nil
