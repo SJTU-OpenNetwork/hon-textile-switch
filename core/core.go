@@ -231,7 +231,10 @@ type mdnsNotifee struct {
 }
 
 func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	m.h.Connect(m.ctx, pi)
+	err := m.h.Connect(m.ctx, pi)
+	if err != nil {
+		fmt.Printf("error occur when connect mdns peer\n")
+	}
 }
 
 // touchDatastore ensures that we have a good db connection
