@@ -3,7 +3,7 @@ package stream
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/SJTU-OpenNetwork/hon-textile/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"sync"
 )

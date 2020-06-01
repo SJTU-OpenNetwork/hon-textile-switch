@@ -4,7 +4,7 @@ import (
 	"fmt"
     "time"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/SJTU-OpenNetwork/hon-textile/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 )
 
 const maxBlockFetchNum = 1
