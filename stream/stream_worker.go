@@ -68,14 +68,14 @@ func (sw *streamWorker) cancel(){
 }
 
 func (sw *streamWorker) start() error {
-	log.Debugf("[%s] Stream %s, To %s", TAG_WORKERSTART, sw.stream.Id, sw.pid.Pretty())
+	//log.Debugf("[%s] Stream %s, To %s", TAG_WORKERSTART, sw.stream.Id, sw.pid.Pretty())
 	//fmt.Printf("stream/streamWorker.go start(): Worker for stream %s to %s start\n", sw.stream.Id, sw.pid.Pretty())
 	// Start the block sending routine
 	sw.currentIndex = sw.req.StartIndex
 	sw.notice() //notice once at begining
 	go func(){
 		//defer fmt.Printf("stream/streamWorker.go start(): worker for stream %s to %s end\n", sw.stream.Id, sw.pid.Pretty())
-		defer log.Debugf("[%s] Stream %s, To %s", TAG_WORKEREND, sw.stream.Id, sw.pid.Pretty())
+		//defer log.Debugf("[%s] Stream %s, To %s", TAG_WORKEREND, sw.stream.Id, sw.pid.Pretty())
 		for {
 			select {
 				case <-sw.workSignal:
@@ -88,7 +88,7 @@ func (sw *streamWorker) start() error {
 
 						err := sw.blockSender(sw.pid, fblks)
 						if err != nil {
-							log.Errorf("%s\nError occur when sending blocks.", err.Error())
+							//log.Errorf("%s\nError occur when sending blocks.", err.Error())
                             time.Sleep(time.Duration(100)*time.Millisecond) //something wrong, maybe the connection breaks, if that happens, the worker will be canceled
                             break
 						}

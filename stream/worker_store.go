@@ -90,7 +90,7 @@ func (ws *workerStore) endStream(streamId string) {
 	tmpList, ok := ws.workerList[streamId]
 	if ok {
 		for _, w := range tmpList {
-			log.Debugf("[%s] Stream %s, Peer %s", TAG_WORKERSTORE_REMOVE, streamId, w.pid)
+			//log.Debugf("[%s] Stream %s, Peer %s", TAG_WORKERSTORE_REMOVE, streamId, w.pid)
 			w.cancel()
 		}
 		delete(ws.workerList, streamId)
@@ -107,7 +107,7 @@ func (ws *workerStore) endWorker(streamId string, peerId string) {
 		for _, w := range tmpList {
 			if w.pid.Pretty() == peerId {
 				w.cancel()
-				log.Debugf("[%s] Stream %s, Peer %s", TAG_WORKERSTORE_REMOVE, streamId, w.pid)
+				//log.Debugf("[%s] Stream %s, Peer %s", TAG_WORKERSTORE_REMOVE, streamId, w.pid)
 			} else if w.end {
                 continue
             }else {
@@ -133,7 +133,7 @@ func (ws *workerStore) endPeer(pid string) {
 		for _, worker := range(tmpList) {
 			if worker.pid.Pretty() == pid {
 				worker.cancel()
-				log.Debugf("[%s] Stream %s, Peer %s", TAG_WORKERSTORE_REMOVE, streamId, worker.pid)
+				//log.Debugf("[%s] Stream %s, Peer %s", TAG_WORKERSTORE_REMOVE, streamId, worker.pid)
 			} else {
 				// add the remaining workers to newList
 				newList = append(newList, worker)
