@@ -44,6 +44,7 @@ type CafeService struct {
 	inFlightQueries map[string]struct{}
     stream          *stream.StreamService
 	//sub 			*pubsub.Subscription
+    ctx             context.Context
 }
 
 // NewCafeService returns a new threads service
@@ -57,19 +58,10 @@ func NewCafeService(
 		datastore:       datastore,
 		inFlightQueries: make(map[string]struct{}),
         stream:          stream,
+        ctx:             ctx,
 	}
 	handler.service = service.NewService(handler, node,sk)
 
-    //subscribe topic
-    ps, err := pubsub.NewGossipSub(ctx, handler.service.Node())
-	if err != nil {
-		fmt.Printf("error init pubsub\n")
-	}
-	sub, err := ps.Subscribe(string(cafeServiceProtocol))
-	if err != nil {
-		fmt.Printf("error subscribetopic\n")
-	}
-    go handler.pubsubHandler(ctx, sub)
 	return handler
 }
 
@@ -114,6 +106,17 @@ func (h *CafeService) Protocol() protocol.ID {
 // Start begins online services
 func (h *CafeService) Start() {
 	h.service.Start()
+    
+    //subscribe topic
+    ps, err := pubsub.NewGossipSub(h.ctx, h.service.Node())
+	if err != nil {
+		fmt.Printf("error init pubsub\n")
+	}
+	sub, err := ps.Subscribe(string(cafeServiceProtocol))
+	if err != nil {
+		fmt.Printf("error subscribetopic\n")
+	}
+    go h.pubsubHandler(h.ctx, sub)
 
 }
 
@@ -167,8 +170,8 @@ func (h *CafeService) searchLocal(qtype pb.Query_Type, options *pb.QueryOptions,
         peerId := h.service.Node().ID().Pretty()
 		result := &pb.StreamQueryResultItem {
 			Hopcnt: 0,
+            Pid: peerId,
 		}
-		result.Pid = peerId
         
         value,_ := proto.Marshal(result)
 		results.Add(&pb.QueryResult{

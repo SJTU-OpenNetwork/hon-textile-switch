@@ -4,7 +4,7 @@ import (
 	"fmt"
     "time"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile/pb"
 )
 
 const maxBlockFetchNum = 1
@@ -20,6 +20,7 @@ type streamWorker struct {
 	req *pb.StreamRequest 	// Contains core information such as substream and index
 	pid peer.ID				// Contains information about destination
 	currentIndex uint64		// The index of block sending now
+    end bool
 	workSignal chan interface{}
 	cancelSignal chan interface{}
 	blockFetcher func(streamId string, startIndex uint64, maxNum int) ([] *pb.StreamBlock, error)
@@ -43,6 +44,7 @@ func newStreamWorker(
 			cancelSignal: make(chan interface{}, 1),
 			blockFetcher: blockFetcher,
 			blockSender: blockSender,
+            end: false,
 		}
 }
 
@@ -66,14 +68,14 @@ func (sw *streamWorker) cancel(){
 }
 
 func (sw *streamWorker) start() error {
-	//log.Debugf("[%s] Stream %s, To %s", TAG_WORKERSTART, sw.stream.Id, sw.pid.Pretty())
+	log.Debugf("[%s] Stream %s, To %s", TAG_WORKERSTART, sw.stream.Id, sw.pid.Pretty())
 	//fmt.Printf("stream/streamWorker.go start(): Worker for stream %s to %s start\n", sw.stream.Id, sw.pid.Pretty())
 	// Start the block sending routine
 	sw.currentIndex = sw.req.StartIndex
 	sw.notice() //notice once at begining
 	go func(){
 		//defer fmt.Printf("stream/streamWorker.go start(): worker for stream %s to %s end\n", sw.stream.Id, sw.pid.Pretty())
-		//defer log.Debugf("[%s] Stream %s, To %s", TAG_WORKEREND, sw.stream.Id, sw.pid.Pretty())
+		defer log.Debugf("[%s] Stream %s, To %s", TAG_WORKEREND, sw.stream.Id, sw.pid.Pretty())
 		for {
 			select {
 				case <-sw.workSignal:
@@ -86,7 +88,7 @@ func (sw *streamWorker) start() error {
 
 						err := sw.blockSender(sw.pid, fblks)
 						if err != nil {
-							//log.Errorf("%s\nError occur when sending blocks.", err.Error())
+							log.Errorf("%s\nError occur when sending blocks.", err.Error())
                             time.Sleep(time.Duration(100)*time.Millisecond) //something wrong, maybe the connection breaks, if that happens, the worker will be canceled
                             break
 						}
@@ -95,10 +97,14 @@ func (sw *streamWorker) start() error {
 						if len(blks) >= maxBlockFetchNum {
 							sw.notice()
 						}
+                        if fblks[len(fblks)-1].Id == "" {
+                            sw.cancel()
+                        }
 					}
 
 				case <- sw.cancelSignal:
 					// Note that break will break select only.
+                    sw.end = true
 					return
 			}
 		}
@@ -127,7 +133,7 @@ func (sw *streamWorker) isSame(pid peer.ID, req *pb.StreamRequest) bool {
 }
 
 // Convert basic info of worker to loggable map
-//func (sw *streamWorker) Loggable() map[string]interface{} {
+//func (sw *streamWorker) Loggab<F11>le() map[string]interface{} {
 //
 //}
 

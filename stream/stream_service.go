@@ -186,20 +186,24 @@ func (h *StreamService) handleStreamRequest(env *pb.Envelope, pid peer.ID) (*pb.
 		return nil, err
 	}
 
+    return h.service.NewEnvelope(pb.Message_STREAM_REQUEST_HANDLE, &pb.StreamRequestHandle{
+	    Value:1,
+    },nil, true)
+
     // TODO: calculate capacity according to video rate
-    if h.Workload() < 5 {
-        err = h.responseRequest(pid, req)
-        if err != nil {
-            return nil, err
-        }
-	    return h.service.NewEnvelope(pb.Message_STREAM_REQUEST_HANDLE, &pb.StreamRequestHandle{
-		    Value:1,
-	    },nil, true)
-    } else {
-	    return h.service.NewEnvelope(pb.Message_STREAM_REQUEST_HANDLE, &pb.StreamRequestHandle{
-		    Value:0,
-	    },nil, true)
-    }
+//    if h.Workload() < 5 {
+//        err = h.responseRequest(pid, req)
+//        if err != nil {
+//            return nil, err
+//        }
+//	    return h.service.NewEnvelope(pb.Message_STREAM_REQUEST_HANDLE, &pb.StreamRequestHandle{
+//		    Value:1,
+//	    },nil, true)
+//    } else {
+//	    return h.service.NewEnvelope(pb.Message_STREAM_REQUEST_HANDLE, &pb.StreamRequestHandle{
+//		    Value:0,
+//	    },nil, true)
+//    }
 }
 
 func (h *StreamService) SendStreamRequest(peerId string, config *pb.StreamRequest) (*pb.Envelope, error) {
