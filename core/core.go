@@ -200,7 +200,7 @@ func (t *Textile) Start() error {
  	t.cafe.Start()
     err = t.initMDNS()
     if err != nil {
-        fmt.Printf(err)
+        fmt.Printf("%v\n", err)
         return err
     }
 	
