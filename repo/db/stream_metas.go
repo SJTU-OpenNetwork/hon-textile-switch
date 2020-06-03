@@ -16,7 +16,7 @@ func (s *StreamMetaDB) Add(streammeta *pb.StreamMeta) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	stm := `insert or ignore into stream_metas(id, nstream, bitrate, caption, nblocks, posterid) values(?,?,?,?,?,?)`
+	stm := `insert or ignore into stream_metas(id, nstream, bitrate, caption, nblocks, posterid, type) values(?,?,?,?,?,?,?)`
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (s *StreamMetaDB) Add(streammeta *pb.StreamMeta) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(streammeta.Id, streammeta.Nsubstreams, streammeta.Bitrate, streammeta.Caption, streammeta.Nblocks, streammeta.Posterid)
+	_, err = stmt.Exec(streammeta.Id, streammeta.Nsubstreams, streammeta.Bitrate, streammeta.Caption, streammeta.Nblocks, streammeta.Posterid, int(streammeta.Type))
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -81,7 +81,8 @@ func (s *StreamMetaDB) handleQuery(stm string) *pb.StreamMetaList{
         var nstream, bitrate int32
         var nblocks uint64
 		var posterid string
-		if err := rows.Scan(&id, &nstream, &bitrate, &caption, &nblocks, &posterid); err != nil{
+		var typeInt int
+		if err := rows.Scan(&id, &nstream, &bitrate, &caption, &nblocks, &posterid, &typeInt); err != nil{
 			continue
 		}
 		list.Items = append(list.Items, &pb.StreamMeta{
@@ -91,6 +92,7 @@ func (s *StreamMetaDB) handleQuery(stm string) *pb.StreamMetaList{
             Caption: caption,
             Nblocks: nblocks,
             Posterid: posterid,
+			Type: pb.StreamMeta_Type(typeInt),
 		})
 	}
 	return list
