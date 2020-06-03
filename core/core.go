@@ -198,13 +198,12 @@ func (t *Textile) Start() error {
  	t.stream.Start()
  	t.shadow.Start()
  	t.cafe.Start()
-	/*
-    mdns, err := discovery.NewMdnsService(t.ctx, t.node, time.Second*10, "")
-	if err != nil {
-		panic(err)
-	}
-	mdns.RegisterNotifee(&mdnsNotifee{h: t.node, ctx: t.ctx})
-	*/
+    err = t.initMDNS()
+    if err != nil {
+        fmt.Printf(err)
+        return err
+    }
+	
  	// Outprint peer info
  	fmt.Printf("Host start with:\n")
  	fmt.Printf("PeerId: %s\n", t.node.ID().Pretty())
