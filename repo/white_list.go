@@ -27,8 +27,12 @@ func (e *ErrFetchLockFail) Error() string {
 //		- Load from text file to cache when start peer
 //		- Read from cache when judge whether a peer is in white list
 //		- Write to cache and further write back to text file when write white list
+// NOTE:
+//		- Flock has been removed from WhiteList.
+//			That is because only unix based os supports flock.
+//			And we need to run it on windows sometimes.
 type WhiteList struct {
-	flock *util.Flock	// File lock for r/w whitelist file
+	//flock *util.Flock	// File lock for r/w whitelist file
 	clock sync.Mutex	// cache lock for r/w cache
 	dirPath string
 	filePath string
@@ -76,7 +80,7 @@ func NewWhiteListStore(dirPath string) (*WhiteList, error) {
 		fmt.Printf("Error occur when create file lock for whitelist\n")
 		return nil, err
 	}
-	res.flock = fileLock
+	//res.flock = fileLock
 	return res, nil
 }
 
@@ -88,20 +92,20 @@ func (w *WhiteList) Check(peerId string) bool {
 }
 
 func (w *WhiteList) Add(peerId string) error {
-	ok := w.flock.Lock()
+	//ok := w.flock.Lock()
 	w.clock.Lock()
 	defer func() {
 		w.clock.Unlock()
-		err := w.flock.Unlock()
-		if err != nil {
-			fmt.Printf("Error occur when unlock whitelist dir:\n %s\n", err.Error())
-		}
+		//err := w.flock.Unlock()
+		//if err != nil {
+		//	fmt.Printf("Error occur when unlock whitelist dir:\n %s\n", err.Error())
+		//}
 	}()
 
-	if !ok {
-		fmt.Printf("Fail to get flock of whitelist dir %s\n", w.dirPath)
-		return &ErrFetchLockFail{dirPath:w.dirPath}
-	}
+	//if !ok {
+	//	fmt.Printf("Fail to get flock of whitelist dir %s\n", w.dirPath)
+	//	return &ErrFetchLockFail{dirPath:w.dirPath}
+	//}
 
 	// Do Add
 
@@ -120,18 +124,20 @@ func (w *WhiteList) Add(peerId string) error {
 }
 
 func (w *WhiteList) Remove(peerId string) error {
-	ok := w.flock.Lock()
+	//ok := w.flock.Lock()
+	w.clock.Lock()
 	defer func() {
-		err := w.flock.Unlock()
-		if err != nil {
-			fmt.Printf("Error occur when unlock whitelist dir:\n %s\n", err.Error())
-		}
+		//err := w.flock.Unlock()
+		//if err != nil {
+		//	fmt.Printf("Error occur when unlock whitelist dir:\n %s\n", err.Error())
+		//}
+		w.clock.Unlock()
 	}()
 
-	if !ok {
-		fmt.Printf("Fail to get flock of whitelist dir %s\n", w.dirPath)
-		return &ErrFetchLockFail{dirPath:w.dirPath}
-	}
+	//if !ok {
+	//	fmt.Printf("Fail to get flock of whitelist dir %s\n", w.dirPath)
+	//	return &ErrFetchLockFail{dirPath:w.dirPath}
+	//}
 
 	// Do Remove
 	delete(w.cache, peerId)
@@ -164,6 +170,12 @@ func (w *WhiteList) readWhiteList() (map[string]interface{}, error){
 func (w *WhiteList) writebackWhiteList(peerId string) error{
 	// Open file writeonly
 	f, err := os.OpenFile(w.filePath, os.O_WRONLY|os.O_APPEND, 0644)
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			fmt.Printf("Error occur when close whitelist file %v\n", err)
+		}
+	}()
 	if err != nil {
 		fmt.Printf("Error occur when open whitelist file for write\n")
 		return err
@@ -174,12 +186,17 @@ func (w *WhiteList) writebackWhiteList(peerId string) error{
 			return err
 		}
 	}
-	defer f.Close()
 	return nil
 }
 
 func (w *WhiteList) rewriteWhiteList() error {
 	f, err := os.Create(w.filePath)
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			fmt.Printf("Error occur when close whitelist file %v\n", err)
+		}
+	}()
 	if err != nil {
 		fmt.Printf("Error occur when flush whitelist file %s\n", err)
 		return err
@@ -191,8 +208,6 @@ func (w *WhiteList) rewriteWhiteList() error {
 			return err
 		}
 	}
-
-	defer f.Close()
 	return nil
 }
 
