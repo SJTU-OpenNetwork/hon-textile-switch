@@ -75,7 +75,7 @@ func NewWhiteListStore(dirPath string) (*WhiteList, error) {
 			res.cache = reloadList
 		}
 	}
-	fileLock, err := util.NewFlock(dirPath)
+	//fileLock, err := util.NewFlock(dirPath)
 	if err != nil {
 		fmt.Printf("Error occur when create file lock for whitelist\n")
 		return nil, err
