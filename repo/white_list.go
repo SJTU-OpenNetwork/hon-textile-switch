@@ -76,10 +76,12 @@ func NewWhiteListStore(dirPath string) (*WhiteList, error) {
 		}
 	}
 	//fileLock, err := util.NewFlock(dirPath)
+	/*
 	if err != nil {
 		fmt.Printf("Error occur when create file lock for whitelist\n")
 		return nil, err
 	}
+	 */
 	//res.flock = fileLock
 	return res, nil
 }
