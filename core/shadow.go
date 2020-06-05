@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -35,8 +36,10 @@ func (t *Textile) shadowMsgRecv(env *pb.Envelope, pid peer.ID) error {
 		if err!=nil {
 			return err
 		}
-//		if response.Value != 1 {
-//		} else {
+		if response.Value != 1 {
+			fmt.Printf("Error: stream %s request reject by %s\n", meta.Id, pid.Pretty())
+		}
+//		else {
 //			t.SubscribeNotify(config.Id, true)
 //		}
 	} else {

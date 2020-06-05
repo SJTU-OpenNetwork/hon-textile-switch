@@ -7,9 +7,9 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
-	"github.com/libp2p/go-libp2p-core/host"
 	ma "github.com/multiformats/go-multiaddr"
 	"sync"
 
@@ -150,8 +150,11 @@ func (h *ShadowService) handleInformRes(env *pb.Envelope, pid peer.ID) (*pb.Enve
 }
 
 func (h *ShadowService) handleStreamMeta(env *pb.Envelope, pid peer.ID) (*pb.Envelope, error) {
-    h.msgRecv(env, pid)
-	return nil, nil
+    err := h.msgRecv(env, pid)
+    if err != nil {
+    	fmt.Printf("Error occur when receive stream meta %v\n", err)
+	}
+	return nil, err
 }
 
 func (h *ShadowService) ShadowStat() *pb.ShadowStat {
