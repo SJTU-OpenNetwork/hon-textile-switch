@@ -33,7 +33,7 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 //Initialize the MDNS service
 func (t *Textile)initMDNS() error {
 	// An hour might be a long long period in practical applications. But this is fine for us
-	ser, err := discovery.NewMdnsService(t.ctx, t.Host(), time.Minute, discovery.ServiceTag)
+	ser, err := discovery.NewMdnsService(t.ctx, t.Host(), time.Second*10, discovery.ServiceTag)
 	if err != nil {
 		return err
 	}
