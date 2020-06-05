@@ -89,6 +89,7 @@ func (ms *messageSender) prep(ctx context.Context) error {
 
 	nstr, err := ms.srv.Node().NewStream(ctx, ms.p, ms.srv.handler.Protocol())
 	if err != nil {
+		fmt.Printf("Error occur when create stream for protocol %s\n", ms.srv.handler.Protocol())
 		return err
 	}
 

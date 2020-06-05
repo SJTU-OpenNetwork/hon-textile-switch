@@ -67,6 +67,8 @@ func NewService(handler Handler, node func() host.Host, privKey libp2pcrypto.Pri
 // Start sets the peer host stream handler
 func (srv *Service) Start() {
 	srv.Node().SetStreamHandler(srv.handler.Protocol(), srv.handleNewStream)
+	//go srv.listen("")
+	//go srv.listen(srv.Node().Identity.Pretty())
 }
 
 // SendRequest sends out a request
