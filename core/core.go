@@ -200,8 +200,8 @@ func (t *Textile) Start() error {
  	t.cafe.Start()
     err = t.initMDNS()
     if err != nil {
-        fmt.Printf("%v\n", err)
-        return err
+        fmt.Printf("init mdns failed: %v\n", err)
+        //return err
     }
 	
  	// Outprint peer info
