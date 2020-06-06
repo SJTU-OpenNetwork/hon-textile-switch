@@ -137,7 +137,7 @@ func (h *ShadowService) PeerConnected(pid peer.ID, multiaddr ma.Multiaddr) {
 
 // TODO: inform pid about my information (e.g., public key), could use ``contact'' directly
 func (h *ShadowService) inform(pid peer.ID) error {
-	fmt.Printf("Shadow: Send inform to %s", pid.Pretty())
+	fmt.Printf("Shadow: Send inform to %s\n", pid.Pretty())
 
 	inform := &pb.ShadowInform{}
 	inform.PublicKey = h.address

@@ -52,10 +52,10 @@ func (s *Server) handleMessage(conn net.Conn) {
 		cmd, err := rw.ReadString('\n')
 		switch  {
 		case err == io.EOF:
-			fmt.Println("Read command successfully.")
+			fmt.Println("Command reader close\n")
 			return
 		case err != nil:
-			fmt.Println("Read command fail.\nError:%s\n", err.Error())
+			fmt.Printf("Read command fail.\nError:%v\n", err)
 			return
 		}
 		cmd = strings.Trim(cmd, "\n")
