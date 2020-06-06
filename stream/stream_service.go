@@ -1,4 +1,4 @@
-// Service for sending/receving stream related data - add by Jerry 2020/02/25
+// Service for sending/receving stream related data - add by Jerry 2019/02/25
 
 package stream
 
@@ -106,36 +106,39 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
     }
     for _, blk := range blks.Blocks {
         size := 0
-        m := make(map[string]string)
-        err := json.Unmarshal(blk.Description, &m)
-        if err != nil{
-            return nil, err
-        }
+        fmt.Printf("size: %d\n", len(blk.Data))
+        var cid string
         if len(blk.Data) != 0 {
-            //TODO: save blk in file system
-            err := util.WriteFileByPath(h.repoPath+"/blocks/"+m["CID"], blk.Data)
-            if err != nil {
+            m := make(map[string]string)
+            err := json.Unmarshal(blk.Description, &m)
+            if err != nil{
                 return nil, err
             }
+            cid = m["CID"]
+
+            err = util.WriteFileByPath(h.repoPath+"/blocks/"+cid, blk.Data)
+            if err != nil {
+                fmt.Printf("error occur when store file")
+                return nil, err
+            }
+        } else {
+            cid = ""
         }
         model := &pb.StreamBlock {
-            Id: m["CID"],  //get id from description
+            Id: cid,  //get id from description
             Streamid: blk.StreamID,
             Index: blk.Index,
             Size: int32(size),
             IsRoot: blk.IsRoot,
             Description: string(blk.Description),
         }
-        //fmt.Printf("StreamService: Received stream %s; index %d; cid %s\n", blk.StreamID, blk.Index, cid.String())
         fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, From %s, Size %d", model.Id, blk.StreamID, blk.Index, pid.Pretty(), size)
         err = h.datastore.StreamBlocks().Add(model)
         if err != nil {
             return nil, err
         }
-        //fmt.Printf("It is successfully stored in our database!\n")
 
         if blk.IsRoot {
-            // we found a file !
             fmt.Print("It is a root node of a merkle-DAG!\n")
             err = h.handleRootBlk(pid, model)
             if err != nil {
@@ -183,9 +186,14 @@ func (h *StreamService) handleStreamRequest(env *pb.Envelope, pid peer.ID) (*pb.
 	req := new(pb.StreamRequest)
 	err := ptypes.UnmarshalAny(env.Message.Payload, req)
 	if err != nil {
+        fmt.Print(err)
 		return nil, err
 	}
 
+    err = h.responseRequest(pid, req)
+    if err != nil {
+        return nil, err
+    }
     return h.service.NewEnvelope(pb.Message_STREAM_REQUEST_HANDLE, &pb.StreamRequestHandle{
 	    Value:1,
     },nil, true)

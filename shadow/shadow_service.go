@@ -108,11 +108,19 @@ func (h *ShadowService) removeUser(pid peer.ID) {
 }
 
 func (h *ShadowService) WhitelistAddItem(pid string) error{
-    return h.inform(peer.ID(pid))
+    id, err :=peer.IDFromString(pid)
+    if err != nil {
+        return nil
+    }
+    return h.inform(id)
 }
 
 func (h *ShadowService) WhitelistRemoveItem(pid string) error {
-    h.removeUser(peer.ID(pid))
+    id, err :=peer.IDFromString(pid)
+    if err != nil {
+        return nil
+    }
+    h.removeUser(id)
     return nil
 }
 
