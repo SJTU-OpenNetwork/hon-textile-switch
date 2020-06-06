@@ -3,11 +3,20 @@ package core
 import "fmt"
 
 func (t *Textile) WhitelistAddItem(peerId string) error {
-	return t.whiteList.Add(peerId)
+    err := t.whiteList.Add(peerId)
+    if err != nil {
+        return err
+    }
+    return t.shadow.WhitelistAddItem(peerId)
 }
 
 func (t *Textile) WhitelistRemoveItem(peerId string) error {
-	return t.whiteList.Remove(peerId)
+    err := t.whiteList.Remove(peerId)
+    if err != nil {
+        return err
+    }
+    t.shadow.WhitelistRemoveItem(peerId)
+    return nil
 }
 
 func (t* Textile) PrintWhiteList() {
