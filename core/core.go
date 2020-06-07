@@ -69,7 +69,7 @@ func (conf InitConfig) Repo() (string, error) {
 // It does the following things:
 //		- Create repo directory.
 //		- Create datastore and save it to directory.
-func InitRepo(conf InitConfig) error {
+func InitRepo(conf InitConfig) error { // write the default conf files into usb dir
 	repoPath, err := conf.Repo()
 	if err != nil {
 		return err
@@ -258,7 +258,6 @@ func stringInSlice(a string, list []string) bool {
 	}
 	return false
 }
-
 
 func Max(x, y int) int {
 	if x < y {

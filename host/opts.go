@@ -38,5 +38,7 @@ func option(repoPath string, cfg *config.Config) ([]libp2p.Option, error){
 
 	// set security protocol
 	opts = append(opts, libp2p.ChainOptions(libp2p.Security(secio.ID, secio.New), libp2p.Security(tls.ID, tls.New)))
+
+	opts = append(opts, libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/40102"))
 	return opts, nil
 }

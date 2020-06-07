@@ -42,7 +42,7 @@ func Init(repoPath string) error {
 	} else {
 		isInit := IsInitialized(repoPath)
 		if isInit {
-			return ErrRepoExists
+			return ErrRepoExists // should delete the old "shareit" dir before reinstalling
 		}
 	}
 	err := checkWriteable(repoPath)
