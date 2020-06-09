@@ -172,7 +172,7 @@ func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
 			Block: blk.Streamid,
 			Date:  ptypes.TimestampNow(),
 			//Actor:                t.node().Identity.Pretty(),	// Whether this is id of this peer ?
-			Subject: recorder.Event_DoneIPFSGet,
+			Subject: recorder.Event_DoneSHADOW,
 			Target:  pid.Pretty(),
 			Read:    false, // Do not send to notification channel directly
 		}
