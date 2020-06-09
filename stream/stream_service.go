@@ -165,6 +165,9 @@ func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
             //log.Error(err)
             return err
         }
+
+        // Send notification back
+
     }
     return nil
 }
