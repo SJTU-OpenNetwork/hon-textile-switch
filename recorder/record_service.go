@@ -9,7 +9,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	peer "github.com/libp2p/go-libp2p-core/peer"
-	"github.com/opentracing/opentracing-go/log"
 )
 
 // recrod service is used to collect statistics.
@@ -115,7 +114,7 @@ func (h *RecordService) ListenRecordCh() {
 		case n := <- RecordCh:
 			err := h.handleRecordChannel(n)
 			if err != nil {
-				log.Error(err)
+				fmt.Printf("Error %v\n", err)
 			}
 		}
 	}

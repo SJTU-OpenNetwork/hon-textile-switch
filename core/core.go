@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
@@ -43,6 +44,7 @@ type Textile struct {
 	//online            chan struct{}
 	//done              chan struct{}
 	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
+	record 			  *recorder.RecordService
 	//lock              sync.Mutex
     stream            *stream.StreamService
     cafe              *CafeService
@@ -176,7 +178,7 @@ func (t *Textile) Start() error {
         t.Host().ID().Pretty(),
         sk,
         t.whiteList)
-
+	t.record = recorder.NewRecordService(t.Host, t.ctx, sk)
     t.cafe = NewCafeService(
         t.Host,
         t.ctx,
@@ -197,6 +199,7 @@ func (t *Textile) Start() error {
 */
  	t.stream.Start()
  	t.shadow.Start()
+ 	t.record.Start()
  	t.cafe.Start()
     err = t.initMDNS()
     if err != nil {
