@@ -18,6 +18,7 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
 )
 
 
@@ -167,7 +168,15 @@ func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
         }
 
         // Send notification back
-
+		record2 := &pb.Notification{
+			Block: blk.Streamid,
+			Date:  ptypes.TimestampNow(),
+			//Actor:                t.node().Identity.Pretty(),	// Whether this is id of this peer ?
+			Subject: recorder.Event_DoneIPFSGet,
+			Target:  pid.Pretty(),
+			Read:    false, // Do not send to notification channel directly
+		}
+		recorder.RecordCh <- record2
     }
     return nil
 }
