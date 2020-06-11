@@ -12,6 +12,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 	ma "github.com/multiformats/go-multiaddr"
 	"sync"
+	"time"
 
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -20,6 +21,8 @@ import (
 
 // streamServiceProtocol is the current protocol tag
 const shadowServiceProtocol = protocol.ID("/textile/shadow/1.0.0")
+const informRetry = 5
+const informInternal = time.Second * 3
 var ErrWrongRole = fmt.Errorf("Wrong role.")	//shadow function called at normal peer or vice versa.
 
 type ShadowService struct {
@@ -150,8 +153,24 @@ func (h *ShadowService) inform(pid peer.ID) error {
 	inform := &pb.ShadowInform{}
 	inform.PublicKey = h.address
 	env, err := h.service.NewEnvelope(pb.Message_SHADOW_INFORM, inform, nil, true); if err != nil {return err}
-	err = h.service.SendMessage(nil, pid.Pretty(), env); if err != nil {return err}
-
+	informTime := 0;
+	for {
+		informTime += 1
+		err = h.service.SendMessage(nil, pid.Pretty(), env)
+		if err != nil {
+			fmt.Printf("Send inform failed: %v\n", err)
+			if informTime < informRetry {
+				fmt.Printf("Retry after %v \n", informInternal)
+				time.Sleep(informInternal)
+				continue
+			} else {
+				return err
+			}
+			//return err
+		} else {
+			return nil
+		}
+	}
     return nil
 }
 
