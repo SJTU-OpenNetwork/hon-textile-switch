@@ -111,9 +111,11 @@ func (h *ShadowService) removeUser(pid peer.ID) {
 }
 
 func (h *ShadowService) WhitelistAddItem(pid string) error{
-    id, err :=peer.IDFromString(pid)
+    //id, err :=peer.IDFromString(pid)
+    id, err := peer.IDB58Decode(pid)
     if err != nil {
-        return nil
+    	fmt.Printf("Error occurs when decode id from %s\n%v\n", pid, err)
+        return err
     }
     return h.inform(id)
 }
