@@ -21,12 +21,12 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	//n.PeerChan <- pi
 	ctx, cancel := context.WithTimeout(n.node.ctx, discoveryConnTimeout)
 	defer cancel()
-	fmt.Printf("Try to connect with peer info:\nPeerId: %s\naddress: %v\n", pi.ID.Pretty(), pi.Addrs)
+	//fmt.Printf("Try to connect with peer info:\nPeerId: %s\naddress: %v\n", pi.ID.Pretty(), pi.Addrs)
 	if err := n.node.Host().Connect(ctx, pi); err != nil {
 		fmt.Printf("Connect mdns peer %s failed\n", pi.ID.Pretty())
 		fmt.Printf("Error %v\n", err)
 	} else {
-		fmt.Printf("Connect mdns peer %s succeed\n", pi.ID.Pretty())
+		//fmt.Printf("Connect mdns peer %s succeed\n", pi.ID.Pretty())
 	}
 }
 

@@ -310,7 +310,7 @@ func (h *CafeService) handlePubSubQuery(env *pb.Envelope, pid peer.ID) (*pb.Enve
 
 	err = h.service.SendMessage(ctx, pid.Pretty(), renv)
 	if err != nil {
-		fmt.Printf("error sending message response to %s: %s", pid, err)
+		fmt.Printf("error sending message response to %s: %s\n", pid, err)
 	}
 	return nil, nil
 }
