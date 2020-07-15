@@ -3,7 +3,7 @@ package repo
 import (
 	"bytes"
 	"fmt"
-	pnet "github.com/libp2p/go-libp2p-pnet"
+	//pnet "github.com/libp2p/go-libp2p-pnet"
 	ipnet "github.com/libp2p/go-libp2p-core/pnet"
 	"io/ioutil"
 	"os"
@@ -34,7 +34,8 @@ func swarmKey(repoPath string) ([]byte, error) {
 }
 
 // GetProtector fetch swarmkey in swarmKeyFile and return the libp2p protector.
-func GetProtector(repoPath string) ipnet.Protector {
+//func GetProtector(repoPath string) ipnet.Protector {
+func GetProtector(repoPath string) ipnet.PSK {
 	swarmkey, err := swarmKey(repoPath)
 	if err != nil {
 		fmt.Printf("Error occurs when read swarm key.\n%s\nHost will run on public network\n", err.Error())
@@ -43,11 +44,15 @@ func GetProtector(repoPath string) ipnet.Protector {
 		fmt.Printf("No swarm key\nHost will run on public network\n")
 		return nil
 	}
-
-	protec, err := pnet.NewProtector(bytes.NewReader(swarmkey))
+	psk, err := ipnet.DecodeV1PSK(bytes.NewReader(swarmkey))
 	if err != nil {
 		fmt.Printf("Error occurs when build protector from swarmkey.\nHost will run on public network\n")
 		return nil
 	}
-	return protec
+	//protec, err := pnet.NewProtector(bytes.NewReader(swarmkey))
+	//if err != nil {
+	//	fmt.Printf("Error occurs when build protector from swarmkey.\nHost will run on public network\n")
+	//	return nil
+	//}
+	return psk
 }
