@@ -34,6 +34,10 @@ func IsInitialized(repoPath string) bool {
 	return false
 }
 
+// Init does following tasks:
+//	- Write the default textile config
+//	- Create whitelist
+//	- Write the default swarm key
 func Init(repoPath string) error {
 	// Make directory
 	if !util.DirectoryExists(repoPath) {
