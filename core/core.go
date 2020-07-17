@@ -10,12 +10,15 @@ import (
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	p2phost "github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	ma "github.com/multiformats/go-multiaddr"
 	"os"
 	"path"
+	"time"
+
 	//"strings"
 	//"sync"
 )
@@ -49,6 +52,7 @@ type Textile struct {
     stream            *stream.StreamService
     cafe              *CafeService
 	whiteList         repo.WhiteListStore
+	pprofTask 		  *util.PprofTask
 }
 
 // common errors
@@ -97,6 +101,9 @@ func InitRepo(conf InitConfig) error { // write the default conf files into usb 
 		return err
 	}
 
+	pprofDir := path.Join(repoPath, "statistic")
+	os.Mkdir(pprofDir, os.ModePerm)
+
 	//return applyTextileConfigOptions(conf)
 	return nil
 }
@@ -144,6 +151,8 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 		fmt.Printf("Error occur when create host\n")
 		return nil, err
 	}
+
+	node.pprofTask = util.NewPprofTask(path.Join(repoPath, "statistic"), path.Join(repoPath, "statistic"))
 	return node, nil
 }
 
@@ -162,13 +171,13 @@ func (t *Textile) Start() error {
 		fmt.Printf("Error occurs when unmarshal private key\n%s\n", err)
 		return err
 	}
-
+	streamCtx := context.WithValue(t.ctx, "pprof", t.pprofTask)
 	t.stream = stream.NewStreamService(
 		t.Host,
 		t.datastore,
 		t.repoPath,
 		t.SubscribeStream,
-		t.ctx,
+		streamCtx,
 		sk)
 
 	t.shadow = shadow.NewShadowService(
@@ -197,6 +206,7 @@ func (t *Textile) Start() error {
     }()
 	t.started = true
 */
+	go t.pprofTask.StartMem(5*time.Second, true, context.Background())
  	t.stream.Start()
  	t.shadow.Start()
  	t.record.Start()

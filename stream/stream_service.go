@@ -43,6 +43,8 @@ type StreamService struct {
 
 	// Context for main routine
 	ctx context.Context
+
+	pprofTask *util.PprofTask
 }
 
 // NewStreamService returns a new stream service
@@ -61,6 +63,7 @@ func NewStreamService(
 		ctx:			  ctx,
 		activeWorkers: newWorkerStore(),
         providers: newProviderStore(),
+        pprofTask: ctx.Value("pprof").(*util.PprofTask),
 	}
 	handler.service = service.NewService(handler, node, key)
 	return handler
@@ -156,6 +159,7 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
 }
 
 func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
+	h.pprofTask.NoticeMem()
     if blk.Id == "" {
         meta := h.datastore.StreamMetas().Get(blk.Streamid)
 	    if meta == nil || meta.Nblocks > 0{

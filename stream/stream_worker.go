@@ -51,6 +51,7 @@ func newStreamWorker(
 func (sw *streamWorker) notice() {
 	// workSignal has buffer size 1.
 	// notice() would not block if the worker has already been noticed.
+	// Note that default has lower priority than case in golang.
 	select{
 		case sw.workSignal <- struct{}{}:
 		default:
