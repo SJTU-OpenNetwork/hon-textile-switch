@@ -322,6 +322,7 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
             IsRoot: blk.IsRoot,
             Description: []byte(blk.Description),
         }
+        fmt.Println("Send Index ", blk.Index)
         //log.Debugf("[%s] Block %s, Stream %s, Index %d, To %s, Size %d, description: %s", TAG_BLOCKSEND, blk.Id, blk.Streamid, blk.Index, peerId.Pretty(), blk.Size, blk.Description)
         blist.Blocks = append(blist.Blocks, content)
     }
@@ -334,6 +335,7 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
     err = h.service.SendMessage(nil, peerId.Pretty(), env)
     if err != nil {
         //log.Error(err)
+    	fmt.Println("Error, send message failed: ", err)
     }
 	return nil
 }
