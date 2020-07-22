@@ -362,7 +362,7 @@ func (h *StreamService) createWorker(pid peer.ID, req *pb.StreamRequest) (*strea
 	if stream == nil {
 		return nil, ErrUnknowkStream
 	}
-	return newStreamWorker(stream, pid, req, h.FetchBlocks, h.SendStreamBlocks), nil
+	return newStreamWorker(stream, pid, req, h.FetchBlocks, h.SendStreamBlocks, h.ctx), nil
 }
 
 func (h *StreamService) Workload() int {

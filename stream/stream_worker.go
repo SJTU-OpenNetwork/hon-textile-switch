@@ -1,8 +1,10 @@
 package stream
 
 import (
+	"context"
 	"fmt"
-    "time"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
+	"time"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
 )
@@ -26,6 +28,8 @@ type streamWorker struct {
 	blockFetcher func(streamId string, startIndex uint64, maxNum int) ([] *pb.StreamBlock, error)
 	blockSender func (destination peer.ID, streamBlk [] *pb.StreamBlock) error
 	//stopSignal chan interface{}
+	ctx context.Context
+	pprofTask *util.PprofTask
 }
 
 func newStreamWorker(
@@ -33,7 +37,15 @@ func newStreamWorker(
 	pid peer.ID,
 	req *pb.StreamRequest,
 	blockFetcher func(streamId string, startIndex uint64, maxNum int) ([] *pb.StreamBlock, error),
-	blockSender func (destination peer.ID, streamBlk [] *pb.StreamBlock) error) *streamWorker{
+	blockSender func (destination peer.ID, streamBlk [] *pb.StreamBlock) error,
+	ctx context.Context) *streamWorker{
+
+		var pprofTask *util.PprofTask
+		pprofTask, ok := ctx.Value("pprof").(*util.PprofTask)
+		if !ok {
+			pprofTask = nil
+			fmt.Println("Error: no pprof in worker context!")
+		}
 
 		return &streamWorker{
 			stream: stream,
@@ -45,6 +57,8 @@ func newStreamWorker(
 			blockFetcher: blockFetcher,
 			blockSender: blockSender,
             end: false,
+            ctx: ctx,
+            pprofTask: pprofTask,
 		}
 }
 
@@ -83,7 +97,14 @@ func (sw *streamWorker) start() error {
 				case <-sw.workSignal:
 					// Do sending
 					// Block if there is no signal
+					if sw.pprofTask != nil {
+						sw.pprofTask.NoticeCpu()
+						sw.pprofTask.NoticeMem()
+					}
+					tmpTime := time.Now()
 					blks, _ := sw.blockFetcher(sw.req.Id, sw.currentIndex, maxBlockFetchNum)
+					duration := time.Since(tmpTime)
+					fmt.Println("----- Fetch ", len(blks), " blocks with ", duration.Milliseconds(), "ms")
 					if blks != nil && len(blks) > 0 {
 						fmt.Printf("stream/streamWorker.go start(): send %d blks for stream %s to %s start\n", len(blks), sw.stream.Id, sw.pid.Pretty())
 						//fblks := sw.filterBlocks(blks)
@@ -109,6 +130,8 @@ func (sw *streamWorker) start() error {
                             sw.cancel()
                         }
 					}
+					duration = time.Since(tmpTime)
+					fmt.Println("===== Fetch and send ", len(blks), " blocks with ", duration.Milliseconds(), "ms")
 
 				case <- sw.cancelSignal:
 					// Note that break will break select only.
