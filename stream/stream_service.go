@@ -160,6 +160,7 @@ func (h *StreamService) handleStreamBlockList(env *pb.Envelope, pid peer.ID) (*p
 
 func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
 	h.pprofTask.NoticeMem()
+	h.pprofTask.NoticeCpu()
     if blk.Id == "" {
         meta := h.datastore.StreamMetas().Get(blk.Streamid)
 	    if meta == nil || meta.Nblocks > 0{

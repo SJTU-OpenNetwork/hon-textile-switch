@@ -40,6 +40,54 @@ func (p *PprofTask)NoticeMem() {
 	}
 }
 
+func (p *PprofTask) StartCpu(interval time.Duration, withNotice bool, ctx context.Context) {
+	timer := time.NewTimer(interval)
+
+	var cpuPath string
+	var cpuFile *os.File
+	var err error
+	openTime := time.Now()
+	cpuPath = path.Join(p.cpuDir, "cpu_" + openTime.Format("15_04_05") + "_1min.prof")
+	cpuFile, err = os.Create(cpuPath)
+	if err != nil {
+		fmt.Println("Error when create cpu prof file: ", err)
+	} else {
+		pprof.StartCPUProfile(cpuFile)
+		//defer pprof.StopCPUProfile()
+	}
+
+	for {
+		select{
+		case <- timer.C:
+			if withNotice {
+				<-p.cpuNotice
+			}
+
+			timer.Reset(interval)
+			pprof.StopCPUProfile()
+			if cpuFile != nil {
+				err = cpuFile.Close()
+				if err != nil {
+					fmt.Println("Error when close cpu prof file: ", err)
+				}
+			}
+
+			openTime = time.Now()
+			cpuPath = path.Join(p.cpuDir, "cpu_" + openTime.Format("15_04_05") + "_1min.prof")
+			cpuFile, err = os.Create(cpuPath)
+			if err != nil {
+				fmt.Println("Error when create cpu prof file: ", err)
+			} else {
+				pprof.StartCPUProfile(cpuFile)
+				//defer pprof.StopCPUProfile()
+			}
+
+		case <-ctx.Done():
+			fmt.Println("Cpu prof task ctx end: ", ctx.Err())
+		}
+	}
+}
+
 // Start the memory statistic task
 // Call this func in a independent go routine
 func (p *PprofTask)StartMem(interval time.Duration, withNotice bool, ctx context.Context) {
@@ -56,7 +104,7 @@ func (p *PprofTask)StartMem(interval time.Duration, withNotice bool, ctx context
 				<-p.memNotice
 			}
 			timer.Reset(interval)
-			memPath = path.Join(p.cpuDir, "mem_" + t.Format("15_04_05") + ".prof")
+			memPath = path.Join(p.memDir, "mem_" + t.Format("15_04_05") + ".prof")
 			memFile, err = os.Create(memPath)
 			if err != nil {
 				fmt.Println("Error when create memory prof file: ", err)

@@ -8,6 +8,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	secio "github.com/libp2p/go-libp2p-secio"
 	tls "github.com/libp2p/go-libp2p-tls"
+	yamux "github.com/libp2p/go-libp2p-yamux"
 )
 
 // option() build the libp2p options
@@ -16,6 +17,10 @@ import (
 //		- protector, used to run host in private network
 //		- security, used to set the security protocol used by connections
 func option(repoPath string, cfg *config.Config) ([]libp2p.Option, error){
+	const yamuxID = "/yamux/1.0.0"
+	ymxtpt := *yamux.DefaultTransport
+	ymxtpt.AcceptBacklog = 512
+
 	var privKey crypto.PrivKey
 	var err error
 
@@ -40,5 +45,8 @@ func option(repoPath string, cfg *config.Config) ([]libp2p.Option, error){
 	opts = append(opts, libp2p.ChainOptions(libp2p.Security(secio.ID, secio.New), libp2p.Security(tls.ID, tls.New)))
 
 	opts = append(opts, libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/40102"))
+
+	// set muxer
+	opts = append(opts, libp2p.Muxer(yamuxID, &ymxtpt))
 	return opts, nil
 }

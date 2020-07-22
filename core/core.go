@@ -207,6 +207,7 @@ func (t *Textile) Start() error {
 	t.started = true
 */
 	go t.pprofTask.StartMem(5*time.Second, true, context.Background())
+	go t.pprofTask.StartCpu(30*time.Second, true, context.Background())
  	t.stream.Start()
  	t.shadow.Start()
  	t.record.Start()
