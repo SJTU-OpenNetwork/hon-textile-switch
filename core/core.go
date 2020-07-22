@@ -171,13 +171,14 @@ func (t *Textile) Start() error {
 		fmt.Printf("Error occurs when unmarshal private key\n%s\n", err)
 		return err
 	}
-	streamCtx := context.WithValue(t.ctx, "pprof", t.pprofTask)
+	//streamCtx := context.WithValue(t.ctx, "pprof", t.pprofTask)
 	t.stream = stream.NewStreamService(
 		t.Host,
 		t.datastore,
 		t.repoPath,
 		t.SubscribeStream,
-		streamCtx,
+		//streamCtx,
+		t.ctx,
 		sk)
 
 	t.shadow = shadow.NewShadowService(
