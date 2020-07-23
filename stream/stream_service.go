@@ -5,8 +5,9 @@ package stream
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
-//    "bytes"
+	//    "bytes"
 	"context"
 
 	"github.com/golang/protobuf/ptypes"
@@ -311,10 +312,12 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
         if blk.Id != "" {
             //TODO: get block from database and file system
             var err error
+            tStart:=time.Now()
             data, err = util.ReadFileByPath(h.repoPath + "/blocks/", blk.Id)
 		    if err != nil {
 			    return err
 		    }
+		    fmt.Println("after read: ",time.Since(tStart))
         }
         content := &pb.StreamBlockContent{
             StreamID: blk.Streamid,
@@ -333,11 +336,13 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
 		return err
 	}
 	// Send envelope use StreamService.service.SendMessage
+	tStart:=time.Now()
     err = h.service.SendMessage(nil, peerId.Pretty(), env)
     if err != nil {
         //log.Error(err)
     	fmt.Println("Error, send message failed: ", err)
     }
+    fmt.Println("-------after send: ",time.Since(tStart))
 	return nil
 }
 
