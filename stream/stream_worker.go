@@ -92,6 +92,7 @@ func (sw *streamWorker) start() error {
 		//defer log.Debugf("[%s] Stream %s, To %s", TAG_WORKEREND, sw.stream.Id, sw.pid.Pretty())
 		for {
 			var retry int
+			tmpTime := time.Now()
 			select {
 				case <-sw.workSignal:
 					// Do sending
@@ -103,7 +104,9 @@ func (sw *streamWorker) start() error {
 					//tmpTime := time.Now()
 					blks, _ := sw.blockFetcher(sw.req.Id, sw.currentIndex, maxBlockFetchNum)
 					//duration := time.Since(tmpTime)
-					//fmt.Println("----- Fetch ", len(blks), " blocks with ", duration.Milliseconds(), "ms")
+					//fmt.Println("----- Fetch ", len(blks), " blocks with ", time.Since(tmpTime) , "ms")
+					fmt.Println("=== 2 circle and fetch: ", time.Since(tmpTime) , "ms")
+					tmpTime=time.Now()
 					if blks != nil && len(blks) > 0 {
 						fmt.Printf("stream/streamWorker.go start(): send %d blks for stream %s to %s start\n", len(blks), sw.stream.Id, sw.pid.Pretty())
 						//fblks := sw.filterBlocks(blks)
@@ -129,6 +132,9 @@ func (sw *streamWorker) start() error {
                             sw.cancel()
                         }
 					}
+					fmt.Println("send: ",time.Since(tmpTime))
+					tmpTime=time.Now()
+
 					//duration = time.Since(tmpTime)
 					//fmt.Println("===== Fetch and send ", len(blks), " blocks with ", duration.Milliseconds(), "ms")
 
