@@ -307,17 +307,17 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
 
 	// Marshal blocks to pb
     blist := new(pb.StreamBlockContentList)
+	tStart:=time.Now()
     for _, blk:= range blks {
         var data []byte
         if blk.Id != "" {
             //TODO: get block from database and file system
             var err error
-            tStart:=time.Now()
+
             data, err = util.ReadFileByPath(h.repoPath + "/blocks/", blk.Id)
 		    if err != nil {
 			    return err
 		    }
-		    fmt.Println("after read: ",time.Since(tStart))
         }
         content := &pb.StreamBlockContent{
             StreamID: blk.Streamid,
@@ -330,13 +330,15 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
         //log.Debugf("[%s] Block %s, Stream %s, Index %d, To %s, Size %d, description: %s", TAG_BLOCKSEND, blk.Id, blk.Streamid, blk.Index, peerId.Pretty(), blk.Size, blk.Description)
         blist.Blocks = append(blist.Blocks, content)
     }
+	fmt.Println("after read: ",time.Since(tStart))
+
 	env, err := h.service.NewEnvelope(pb.Message_STREAM_BLOCK_LIST, blist, nil, false)
 	if err != nil {
         //log.Error(err)
 		return err
 	}
 	// Send envelope use StreamService.service.SendMessage
-	tStart:=time.Now()
+	tStart=time.Now()
     err = h.service.SendMessage(nil, peerId.Pretty(), env)
     if err != nil {
         //log.Error(err)
