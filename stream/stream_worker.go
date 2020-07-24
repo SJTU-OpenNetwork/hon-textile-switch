@@ -106,7 +106,7 @@ func (sw *streamWorker) start() error {
 					blks, _ := sw.blockFetcher(sw.req.Id, sw.currentIndex, maxBlockFetchNum)
 					//duration := time.Since(tmpTime)
 					//fmt.Println("----- Fetch ", len(blks), " blocks with ", time.Since(tmpTime) , "ms")
-					fmt.Println("=== 2 circle and fetch: ", time.Since(tmpTime))
+					fmt.Println("\n=== 2 circle and fetch: ", time.Since(tmpTime))
 					tmpTime=time.Now()
 					if blks != nil && len(blks) > 0 {
 						fmt.Printf("stream/streamWorker.go start(): send %d blks for stream %s to %s start\n", len(blks), sw.stream.Id, sw.pid.Pretty())
@@ -133,7 +133,7 @@ func (sw *streamWorker) start() error {
                             sw.cancel()
                         }
 					}
-					fmt.Println("worker send: ",time.Since(tmpTime))
+					fmt.Println("\nworker send: ",time.Since(tmpTime))
 					tmpTime=time.Now()
 
 					//duration = time.Since(tmpTime)

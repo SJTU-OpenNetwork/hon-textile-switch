@@ -329,9 +329,11 @@ var writerPool = sync.Pool{
 func writeMsg(w io.Writer, mes *pb.Envelope) error {
 	bw := writerPool.Get().(*bufferedDelimitedWriter)
 	bw.Reset(w)
+	tStart:=time.Now()
 	err := bw.WriteMsg(mes)
 	if err == nil {
 		err = bw.Flush()
+		fmt.Println("=== bw flush: ",time.Since(tStart))
 	}
 	bw.Reset(nil)
 	writerPool.Put(bw)

@@ -29,6 +29,8 @@ func (srv *Service) messageSenderForPeer(ctx context.Context, p peer.ID) (*messa
 		srv.smlk.Lock()
 		defer srv.smlk.Unlock()
 
+		fmt.Println("=====messageSender error: ",err.Error())
+
 		if msCur, ok := srv.strmap[p]; ok {
 			// Changed. Use the new one, old one is invalid and
 			// not in the map so we can just throw it away.
@@ -108,8 +110,10 @@ func (ms *messageSender) SendMessage(ctx context.Context, pmes *pb.Envelope) err
 	ms.lk.Lock()
 	defer ms.lk.Unlock()
 	retry := false
+	tStart:=time.Now()
 	for {
 		if err := ms.prep(ctx); err != nil {
+			fmt.Println("+++",err.Error())
 			return err
 		}
 
@@ -119,6 +123,7 @@ func (ms *messageSender) SendMessage(ctx context.Context, pmes *pb.Envelope) err
 
 			if retry {
 				//log.Info("error writing message, bailing: ", err)
+				fmt.Println("+++",err.Error())
 				return err
 			}
 			//log.Info("error writing message, trying again: ", err)
@@ -133,6 +138,7 @@ func (ms *messageSender) SendMessage(ctx context.Context, pmes *pb.Envelope) err
 			ms.singleMes++
 		}
 
+		fmt.Println("ooooooo sender.SendMessage: ",time.Since(tStart))
 		return nil
 	}
 }
