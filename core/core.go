@@ -187,7 +187,7 @@ func (t *Textile) Start() error {
 	for _,x := range t.node.Addrs(){
 		xx := strings.Split(x.String(),"/")
 		if strings.Contains(xx[2],"192.168.3") {
-			shadowIp1=xx[1]
+			shadowIp1=xx[2]
 			fmt.Println("get shadow IP:",shadowIp1)
 		}
 	}
