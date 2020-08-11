@@ -187,7 +187,7 @@ func (t *Textile) Start() error {
 	for _,x := range t.node.Addrs(){
 		xx := strings.Split(x.String(),"/")
 		for i:=0; i<len(xx);i++{
-			fmt.Print(xx[i]," ")
+			fmt.Print(i,xx[i]," ")
 		}
 		fmt.Println("split over")
 		if strings.Contains(xx[1],"192.168.3") {
