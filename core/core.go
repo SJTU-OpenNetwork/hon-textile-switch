@@ -17,6 +17,7 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	//"strings"
@@ -179,13 +180,24 @@ func (t *Textile) Start() error {
 		t.SubscribeStream,
 		//streamCtx,
 		t.ctx,
+		t.getShadowIp,
 		sk)
+
+	var shadowIp1 string
+	for _,x := range t.node.Addrs(){
+		xx := strings.Split(x.String(),"/")
+		if strings.Contains(xx[1],"192.168.3") {
+			shadowIp1=xx[1]
+			fmt.Println("get shadow IP:",shadowIp1)
+		}
+	}
 
 	t.shadow = shadow.NewShadowService(
         t.Host,
         t.datastore,
         t.shadowMsgRecv,
         t.Host().ID().Pretty(),
+        shadowIp1,
         sk,
         t.whiteList)
 	t.record = recorder.NewRecordService(t.Host, t.ctx, sk)
@@ -365,4 +377,8 @@ func (t* Textile) WritePeerInfo() {
 	}
 
 	defer f.Close()
+}
+
+func (t *Textile) getShadowIp() string {
+	return t.shadow.ShadowIp()
 }

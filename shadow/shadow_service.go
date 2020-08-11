@@ -30,6 +30,7 @@ type ShadowService struct {
 	online           bool
 	msgRecv          func(*pb.Envelope, peer.ID) error
 	address			 string  // public key. textile.account.Address()
+	shadowIp		 string  // ip address
     whiteList        repo.WhiteListStore
 	lock             sync.Mutex
 }
@@ -39,11 +40,16 @@ type shadowInfo struct {
 	multiAddress ma.Multiaddr
 }
 
+func (h *ShadowService) ShadowIp() string{
+	return h.shadowIp
+}
+
 func NewShadowService(
 	node func() host.Host,
 	datastore repo.Datastore,
 	msgRecv func(*pb.Envelope, peer.ID) error,
 	address string,
+	ip string,
 	key crypto.PrivKey,
 	whiteList repo.WhiteListStore,
 ) *ShadowService {
@@ -51,6 +57,7 @@ func NewShadowService(
 		datastore:        datastore,
 		msgRecv:          msgRecv,
 		address:		  address,
+		shadowIp: 		  ip,
 		whiteList:		  whiteList,
 	}
 	handler.service = service.NewService(handler, node, key)
@@ -112,10 +119,11 @@ func (h *ShadowService) PeerConnected(pid peer.ID, multiaddr ma.Multiaddr) {
 
 // TODO: inform pid about my information (e.g., public key), could use ``contact'' directly
 func (h *ShadowService) inform(pid peer.ID) error {
-	fmt.Printf("Shadow: Send inform to %s\n", pid.Pretty())
+	fmt.Printf("Shadow: Send inform to %s, including local IP: %s\n", pid.Pretty(), h.shadowIp)
 
 	inform := &pb.ShadowInform{}
 	inform.PublicKey = h.address
+	inform.ShadowIp = h.shadowIp
 	env, err := h.service.NewEnvelope(pb.Message_SHADOW_INFORM, inform, nil, true); if err != nil {return err}
 	informTime := 0;
 	for {

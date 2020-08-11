@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/SJTU-OpenNetwork/hon-textile v0.0.0-20200421125456-2db157a7df1a
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.4.2
 	github.com/ipfs/go-cid v0.0.5
 	github.com/libp2p/go-conn-security v0.1.0 // indirect
 	github.com/libp2p/go-libp2p v6.0.23+incompatible

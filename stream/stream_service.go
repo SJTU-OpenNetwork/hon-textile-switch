@@ -5,21 +5,24 @@ package stream
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gogo/protobuf/proto"
+	"io/ioutil"
+	"net"
 	"time"
 
 	//    "bytes"
 	"context"
 
-	"github.com/golang/protobuf/ptypes"
-	peer "github.com/libp2p/go-libp2p-core/peer"
-	protocol "github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
+	"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
-	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
+	"github.com/libp2p/go-libp2p-core/host"
+	peer "github.com/libp2p/go-libp2p-core/peer"
+	protocol "github.com/libp2p/go-libp2p-core/protocol"
 )
 
 
@@ -45,6 +48,8 @@ type StreamService struct {
 	// Context for main routine
 	ctx context.Context
 
+	shadowIp func() string
+
 	//pprofTask *util.PprofTask
 }
 
@@ -55,6 +60,7 @@ func NewStreamService(
     repoPath  string,
     subscribe func(string) error,
 	ctx context.Context,
+	shadowIp func() string,
 	key crypto.PrivKey,
 ) *StreamService {
 	handler := &StreamService{
@@ -64,6 +70,7 @@ func NewStreamService(
 		ctx:			  ctx,
 		activeWorkers: newWorkerStore(),
         providers: newProviderStore(),
+        shadowIp: shadowIp,
         //pprofTask: ctx.Value("pprof").(*util.PprofTask),
 	}
 	handler.service = service.NewService(handler, node, key)
@@ -80,6 +87,66 @@ func (h *StreamService) Start() {
     h.online = true
 	h.service.Start()
 	//h.service.Node().Network().Notify((*StreamNotifee)(h))
+
+	//TODO: start TCP server socket, listen and accept stream block push from peer
+	go func(){
+		listener,_:=net.Listen("tcp",":40121")
+		fmt.Println("start listen TCP block push at:",h.shadowIp())
+		for{
+			conn,_:=listener.Accept()
+			go h.handleTCPBlockList(conn)
+		}
+	}()
+}
+
+func (h *StreamService) handleTCPBlockList(conn2 net.Conn) error{
+	buf,_:=ioutil.ReadAll(conn2)
+	streams := make(map[string]int)
+	blks := new(pb.StreamBlockContentList)
+	proto.Unmarshal(buf,blks)
+
+	fmt.Println("get an connection with",len(blks.Blocks),"blocks")
+
+	for _,blk := range blks.Blocks{
+		size := 0
+		var cid string
+		if len(blk.Data) != 0 {
+			m := make(map[string]string)
+			err := json.Unmarshal(blk.Description, &m)
+			if err != nil{
+				return err
+			}
+			cid = m["CID"]
+
+			err = util.WriteFileByPath(h.repoPath+"/blocks/"+cid, blk.Data)
+			if err != nil {
+				fmt.Printf("error occur when store file")
+				return err
+			}
+		} else {
+			cid = ""
+		}
+		model := &pb.StreamBlock {
+			Id: cid,  //get id from description
+			Streamid: blk.StreamID,
+			Index: blk.Index,
+			Size: int32(size),
+			IsRoot: blk.IsRoot,
+			Description: string(blk.Description),
+		}
+		fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, Size %d", model.Id, blk.StreamID, blk.Index, size)
+		h.datastore.StreamBlocks().Add(model)
+
+		if blk.IsRoot {
+			fmt.Print("It is a root node of a merkle-DAG!\n")
+			h.handleRootBlk("", model)
+		}
+		streams[blk.StreamID] = 1
+	}
+	for id := range streams {
+		h.activeWorkers.newFileAdd(id)
+	}
+	return nil
 }
 
 
@@ -88,7 +155,8 @@ func (h *StreamService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, err
 	fmt.Printf("core/stream_service.go Handler: New message receive from %s.\n", pid.Pretty())
 	switch env.Message.Type {
 	case pb.Message_STREAM_BLOCK_LIST:
-		return h.handleStreamBlockList(env, pid)
+		//return h.handleStreamBlockList(env, pid)
+		return nil, nil
 	case pb.Message_STREAM_REQUEST:
 		return h.handleStreamRequest(env, pid)
 	case pb.Message_STREAM_UNSUBSCRIBE:
