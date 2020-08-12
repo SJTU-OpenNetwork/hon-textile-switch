@@ -3,10 +3,10 @@
 package stream
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
-	"io/ioutil"
 	"net"
 	"time"
 
@@ -100,52 +100,66 @@ func (h *StreamService) Start() {
 }
 
 func (h *StreamService) handleTCPBlockList(conn2 net.Conn) error{
-	buf,_:=ioutil.ReadAll(conn2)
-	streams := make(map[string]int)
-	blks := new(pb.StreamBlockContentList)
-	proto.Unmarshal(buf,blks)
+	for{
+		tmp := make([]byte,1024)
+		var buff bytes.Buffer
 
-	fmt.Println("get an connection with",len(blks.Blocks),"blocks")
-
-	for _,blk := range blks.Blocks{
-		size := 0
-		var cid string
-		if len(blk.Data) != 0 {
-			m := make(map[string]string)
-			err := json.Unmarshal(blk.Description, &m)
-			if err != nil{
-				return err
+		for {
+			c,_:=conn2.Read(tmp)
+			if string(tmp[0:c]) == "tcpend" {
+				break
 			}
-			cid = m["CID"]
+			buff.Write(tmp[0:c])
+		}
 
-			err = util.WriteFileByPath(h.repoPath+"/blocks/"+cid, blk.Data)
-			if err != nil {
-				fmt.Printf("error occur when store file")
-				return err
+		buf:=buff.Bytes()
+		streams := make(map[string]int)
+		blks := new(pb.StreamBlockContentList)
+		proto.Unmarshal(buf,blks)
+
+		fmt.Println("get an connection with",len(blks.Blocks),"blocks")
+
+		for _,blk := range blks.Blocks{
+			size := 0
+			var cid string
+			if len(blk.Data) != 0 {
+				m := make(map[string]string)
+				err := json.Unmarshal(blk.Description, &m)
+				if err != nil{
+					return err
+				}
+				cid = m["CID"]
+
+				err = util.WriteFileByPath(h.repoPath+"/blocks/"+cid, blk.Data)
+				if err != nil {
+					fmt.Printf("error occur when store file")
+					return err
+				}
+			} else {
+				cid = ""
 			}
-		} else {
-			cid = ""
-		}
-		model := &pb.StreamBlock {
-			Id: cid,  //get id from description
-			Streamid: blk.StreamID,
-			Index: blk.Index,
-			Size: int32(size),
-			IsRoot: blk.IsRoot,
-			Description: string(blk.Description),
-		}
-		fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, Size %d", model.Id, blk.StreamID, blk.Index, size)
-		h.datastore.StreamBlocks().Add(model)
+			model := &pb.StreamBlock {
+				Id: cid,  //get id from description
+				Streamid: blk.StreamID,
+				Index: blk.Index,
+				Size: int32(size),
+				IsRoot: blk.IsRoot,
+				Description: string(blk.Description),
+			}
+			fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, Size %d\n", model.Id, blk.StreamID, blk.Index, size)
+			h.datastore.StreamBlocks().Add(model)
 
-		if blk.IsRoot {
-			fmt.Print("It is a root node of a merkle-DAG!\n")
-			h.handleRootBlk("", model)
+			if blk.IsRoot {
+				fmt.Print("It is a root node of a merkle-DAG!\n")
+				h.handleRootBlk("", model)
+			}
+			streams[blk.StreamID] = 1
 		}
-		streams[blk.StreamID] = 1
+		for id := range streams {
+			h.activeWorkers.newFileAdd(id)
+		}
 	}
-	for id := range streams {
-		h.activeWorkers.newFileAdd(id)
-	}
+
 	return nil
 }
 
@@ -166,6 +180,7 @@ func (h *StreamService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, err
         return nil, nil
     }
 }
+
 
 // ======================== FOR MESSAGE RECV/SEND ==================================
 // handleStreamBlock receives a STREAM_BLOCK_LIST message
