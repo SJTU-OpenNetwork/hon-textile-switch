@@ -107,6 +107,7 @@ func (h *StreamService) handleTCPBlockList(conn2 net.Conn) error{
 		for {
 			c,_:=conn2.Read(tmp)
 			if string(tmp[0:c]) == "tcpend" {
+				fmt.Println("get an tcp end")
 				break
 			}
 			buff.Write(tmp[0:c])
