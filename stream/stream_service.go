@@ -147,11 +147,11 @@ func (h *StreamService) handleTCPBlockList(conn2 net.Conn) error{
 			IsRoot: blk.IsRoot,
 			Description: string(blk.Description),
 		}
-		fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, Size %d\n", model.Id, blk.StreamID, blk.Index, size)
+		//fmt.Printf("[BLKRECV] Block %s, Stream %s, Index %d, Size %d\n", model.Id, blk.StreamID, blk.Index, size)
 		h.datastore.StreamBlocks().Add(model)
 
 		if blk.IsRoot {
-			fmt.Print("It is a root node of a merkle-DAG!\n")
+			//fmt.Print("It is a root node of a merkle-DAG!\n")
 			h.handleRootBlk("", model)
 		}
 		streams[blk.StreamID] = 1
