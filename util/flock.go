@@ -71,7 +71,7 @@ func NewFlock(dirPath string) (*Flock, error) {
 // Return whether this routine get the file lock successfully.
 func (l *Flock) Lock() bool {
 	if l.locked {
-		fmt.Printf("Directory %s already locked by this thread.\n")
+		fmt.Printf("Directory already locked by this thread.\n")
 		return false
 	} else {
 		var err error
