@@ -322,6 +322,13 @@ func (t *Textile)Connect(peerId string, addr string) error {
 	return nil
 }
 
+func (t *Textile) PeerInfo() peer.AddrInfo {
+	return peer.AddrInfo{
+		ID: t.node.ID(),
+		Addrs: t.node.Addrs(),
+	}
+}
+
 func (t *Textile)tryExtractPublicKey() {
 	fmt.Printf("Try extract public key from peer Id %s\n", t.node.ID().Pretty())
 	_, err := t.node.ID().ExtractPublicKey()

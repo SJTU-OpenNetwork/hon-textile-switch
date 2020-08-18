@@ -28,6 +28,7 @@ func NewServer(node *core.Textile) *Server {
 
 func (s *Server) Listen() error {
 	var err error
+
 	s.listener, err = net.Listen("tcp", ApiPort)
 	if err != nil {
 		fmt.Printf("Error occurs when try to listen port %s for api.", ApiPort)
@@ -74,6 +75,17 @@ func (s *Server) handleMessage(conn net.Conn) {
 			err = s.api_connect(cmd_formatted.Args)
 		case "whitelist":
 			err = s.api_whitelist(cmd_formatted.Args)
+		case "peerInfo":
+			pi := s.api_peerInfo()
+			piByte, err := json.Marshal(pi)
+			if err != nil {
+				fmt.Println("Error when marshal peerInfo: ", err)
+				rw.WriteString("error\n")
+			} else {
+				rw.WriteString(string(piByte)+"\n")
+			}
+			rw.Flush()
+			continue
 		default:
 			err = fmt.Errorf("Unknown cmd: %s", cmd_formatted.Type)
 		}
