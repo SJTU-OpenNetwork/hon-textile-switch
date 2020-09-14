@@ -241,6 +241,18 @@ func (t *Textile) Start() error {
 	t.WritePeerInfo()
  	//t.tryExtractPublicKey()
 
+ 	//connect relay server
+ 	//"/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb"
+ 	var serverAddr ma.Multiaddr
+ 	serverAddr.UnmarshalText([]byte("/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb"))
+	addrInfo,_:=peer.AddrInfoFromP2pAddr(serverAddr)
+ 	err=t.node.Connect(t.ctx,*addrInfo)
+	if err != nil {
+		fmt.Println("connect relay server failed")
+	}else{
+		fmt.Println("connect relay server successfully")
+	}
+
     return nil
 }
 
