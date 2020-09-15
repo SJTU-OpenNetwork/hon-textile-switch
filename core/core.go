@@ -245,7 +245,8 @@ func (t *Textile) Start() error {
  	//"/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb"
  	server1,_ := ma.NewMultiaddr("/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb")
  	server2,_ := ma.NewMultiaddr("/ip4/159.138.3.74/tcp/4001/ipfs/QmYovpcqB12c56AjGRaMUcwfoZg1DYinCFmEAzFHYvLb6R")
-	addrInfos,_:=peer.AddrInfosFromP2pAddrs(server1,server2)
+ 	server3,_ := ma.NewMultiaddr("/ip4/159.138.130.129/tcp/4001/ipfs/QmZX8WVgJ3cQCW3bNcodXhmK34rmNkvqk8Zg9u7f3JEFgN")
+	addrInfos,_:=peer.AddrInfosFromP2pAddrs(server1,server2,server3)
 	for _,addrInfo := range addrInfos {
 		err=t.node.Connect(t.ctx,addrInfo)
 		if err != nil {
