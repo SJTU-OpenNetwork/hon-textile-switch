@@ -424,6 +424,10 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
 	// Send envelope use StreamService.service.SendMessage
 	tStart=time.Now()
     err = h.service.SendMessage(nil, peerId.Pretty(), env)
+
+    // TODO: remove this after test
+    time.Sleep(100*time.Millisecond)
+
     if err != nil {
         //log.Error(err)
     	fmt.Println("Error, send message failed: ", err)
