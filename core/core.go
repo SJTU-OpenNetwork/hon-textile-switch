@@ -243,13 +243,16 @@ func (t *Textile) Start() error {
 
  	//connect relay server
  	//"/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb"
- 	serverAddr,_ := ma.NewMultiaddr("/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb")
-	addrInfo,_:=peer.AddrInfoFromP2pAddr(serverAddr)
- 	err=t.node.Connect(t.ctx,*addrInfo)
-	if err != nil {
-		fmt.Println("connect relay server failed")
-	}else{
-		fmt.Println("connect relay server successfully")
+ 	server1,_ := ma.NewMultiaddr("/ip4/202.120.38.100/tcp/4001/ipfs/QmZt8jsim548Y5UFN24GL9nX9x3eSS8QFMsbSRNMBAqKBb")
+ 	server2,_ := ma.NewMultiaddr("/ip4/159.138.3.74/tcp/4001/ipfs/QmYovpcqB12c56AjGRaMUcwfoZg1DYinCFmEAzFHYvLb6R")
+	addrInfos,_:=peer.AddrInfosFromP2pAddrs(server1,server2)
+	for _,addrInfo := range addrInfos {
+		err=t.node.Connect(t.ctx,addrInfo)
+		if err != nil {
+			fmt.Println("connect relay server failed: ",addrInfo.ID)
+		}else{
+			fmt.Println("connect relay server successfully: ",addrInfo.ID)
+		}
 	}
 
     return nil
