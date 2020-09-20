@@ -60,6 +60,7 @@ func NewShadowService(
 		shadowIp: 		  ip,
 		whiteList:		  whiteList,
 	}
+	fmt.Println("p2pHost address: ",address)
 	handler.service = service.NewService(handler, node, key)
 	return handler
 }

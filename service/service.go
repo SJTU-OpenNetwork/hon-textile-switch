@@ -289,7 +289,7 @@ func (srv *Service) handleError(env *pb.Envelope) error {
 	}
 }
 
-// handleCore provides service level handlers for common message types
+// provides service level handlers for common message types
 func (srv *Service) handleCore(mtype pb.Message_Type) func(*pb.Envelope, peer.ID) (*pb.Envelope, error) {
 	switch mtype {
 	case pb.Message_PING:

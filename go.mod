@@ -27,8 +27,4 @@ require (
 	github.com/multiformats/go-multistream v0.1.1 // indirect
 	github.com/mutecomm/go-sqlcipher v0.0.0-20190227152316-55dbde17881f
 	github.com/segmentio/ksuid v1.0.2
-	github.com/whyrusleeping/go-smux-multiplex v3.0.16+incompatible // indirect
-	github.com/whyrusleeping/go-smux-multistream v2.0.2+incompatible // indirect
-	github.com/whyrusleeping/go-smux-yamux v2.0.9+incompatible // indirect
-	github.com/whyrusleeping/yamux v1.2.0 // indirect
 )
