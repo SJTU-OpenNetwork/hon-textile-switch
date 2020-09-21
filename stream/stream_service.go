@@ -89,14 +89,14 @@ func (h *StreamService) Start() {
 	//h.service.Node().Network().Notify((*StreamNotifee)(h))
 
 	//TODO: start TCP server socket, listen and accept stream block push from peer
-	go func(){
-		listener,_:=net.Listen("tcp",":40121")
-		fmt.Println("start listen TCP block push at:",h.shadowIp())
-		for{
-			conn,_:=listener.Accept()
-			go h.handleTCPBlockList(conn)
-		}
-	}()
+	//go func(){
+	//	listener,_:=net.Listen("tcp",":40121")
+	//	fmt.Println("start listen TCP block push at:",h.shadowIp())
+	//	for{
+	//		conn,_:=listener.Accept()
+	//		go h.handleTCPBlockList(conn)
+	//	}
+	//}()
 }
 
 func (h *StreamService) handleTCPBlockList(conn2 net.Conn) error{
@@ -170,8 +170,8 @@ func (h *StreamService) Handle(env *pb.Envelope, pid peer.ID) (*pb.Envelope, err
 	fmt.Printf("core/stream_service.go Handler: New message receive from %s.\n", pid.Pretty())
 	switch env.Message.Type {
 	case pb.Message_STREAM_BLOCK_LIST:
-		//return h.handleStreamBlockList(env, pid)
-		return nil, nil
+		return h.handleStreamBlockList(env, pid)
+		//return nil, nil
 	case pb.Message_STREAM_REQUEST:
 		return h.handleStreamRequest(env, pid)
 	case pb.Message_STREAM_UNSUBSCRIBE:
