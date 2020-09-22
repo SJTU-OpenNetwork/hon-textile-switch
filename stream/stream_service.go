@@ -5,7 +5,7 @@ package stream
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gogo/protobuf/proto"
+	//"github.com/gogo/protobuf/proto"
 	"io/ioutil"
 	"net"
 	"time"
@@ -14,7 +14,7 @@ import (
 	"context"
 
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/pb"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
+	//"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/service"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
@@ -116,7 +116,8 @@ func (h *StreamService) handleTCPBlockList(conn2 net.Conn) error{
 
 	streams := make(map[string]int)
 	blks := new(pb.StreamBlockContentList)
-	proto.Unmarshal(buf,blks)
+	//proto.Unmarshal(buf,blks)
+	json.Unmarshal(buf, blks)
 
 	fmt.Println("get an connection with",len(blks.Blocks),"blocks")
 
@@ -258,15 +259,15 @@ func (h *StreamService) handleRootBlk(pid peer.ID, blk *pb.StreamBlock) error {
         }
 
         // Send notification back
-		record2 := &pb.Notification{
-			Block: blk.Streamid,
-			Date:  ptypes.TimestampNow(),
-			//Actor:                t.node().Identity.Pretty(),	// Whether this is id of this peer ?
-			Subject: recorder.Event_DoneSHADOW,
-			Target:  pid.Pretty(),
-			Read:    false, // Do not send to notification channel directly
-		}
-		recorder.RecordCh <- record2
+		//record2 := &pb.Notification{
+		//	Block: blk.Streamid,
+		//	Date:  ptypes.TimestampNow(),
+		//	//Actor:                t.node().Identity.Pretty(),	// Whether this is id of this peer ?
+		//	//Subject: recorder.Event_DoneSHADOW,
+		//	Target:  pid.Pretty(),
+		//	Read:    false, // Do not send to notification channel directly
+		//}
+		//recorder.RecordCh <- record2
     }
     return nil
 }

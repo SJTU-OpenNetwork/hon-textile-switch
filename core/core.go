@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/host"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
+	//"github.com/SJTU-OpenNetwork/hon-textile-switch/recorder"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/config"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/repo/db"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/shadow"
 	"github.com/SJTU-OpenNetwork/hon-textile-switch/stream"
-	"github.com/SJTU-OpenNetwork/hon-textile-switch/util"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	p2phost "github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -18,8 +17,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
-
 	//"strings"
 	//"sync"
 )
@@ -48,12 +45,12 @@ type Textile struct {
 	//online            chan struct{}
 	//done              chan struct{}
 	shadow            *shadow.ShadowService //add shadowservice 2020.04.05
-	record 			  *recorder.RecordService
+	//record 			  *recorder.RecordService
 	//lock              sync.Mutex
     stream            *stream.StreamService
     cafe              *CafeService
 	whiteList         repo.WhiteListStore
-	pprofTask 		  *util.PprofTask
+	//pprofTask 		  *util.PprofTask
 }
 
 // common errors
@@ -153,7 +150,7 @@ func NewTextile(conf RunConfig) (*Textile, error) {
 		return nil, err
 	}
 
-	node.pprofTask = util.NewPprofTask(path.Join(repoPath, "statistic"), path.Join(repoPath, "statistic"))
+	//node.pprofTask = util.NewPprofTask(path.Join(repoPath, "statistic"), path.Join(repoPath, "statistic"))
 	return node, nil
 }
 
@@ -200,7 +197,7 @@ func (t *Textile) Start() error {
         shadowIp1,
         sk,
         t.whiteList)
-	t.record = recorder.NewRecordService(t.Host, t.ctx, sk)
+	//t.record = recorder.NewRecordService(t.Host, t.ctx, sk)
     t.cafe = NewCafeService(
         t.Host,
         t.ctx,
@@ -219,11 +216,11 @@ func (t *Textile) Start() error {
     }()
 	t.started = true
 */
-	go t.pprofTask.StartMem(5*time.Second, true, context.Background())
-	go t.pprofTask.StartCpu(30*time.Second, true, context.Background())
+	//go t.pprofTask.StartMem(5*time.Second, true, context.Background())
+	//go t.pprofTask.StartCpu(30*time.Second, true, context.Background())
  	t.stream.Start()
  	t.shadow.Start()
- 	t.record.Start()
+ 	//t.record.Start()
  	t.cafe.Start()
     err = t.initMDNS()
     if err != nil {
