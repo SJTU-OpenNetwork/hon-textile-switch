@@ -427,7 +427,7 @@ func (h *StreamService) SendStreamBlocks(peerId peer.ID, blks []*pb.StreamBlock)
     err = h.service.SendMessage(nil, peerId.Pretty(), env)
 
     // TODO: remove this after test
-    time.Sleep(100*time.Millisecond)
+    time.Sleep(50*time.Millisecond)
 
     if err != nil {
         //log.Error(err)
