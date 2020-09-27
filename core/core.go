@@ -312,7 +312,7 @@ func (t *Textile)Connect(peerId string, addr string) error {
 		return err
 	}
 	// Note that peerId is encoded string
-	// We need to decode it to get the real peerId
+	// We need to decode it to get the real peerIde
 	decodedId, err := peer.IDB58Decode(peerId)
 	if err != nil {
 		fmt.Printf("Error occur when decode peerId\n%s\n", err.Error())
